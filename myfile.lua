@@ -974,7 +974,7 @@ pcall(function ()
     end
 end)
 
-local url = 'https://raw.githubusercontent.com/YaelDev-HS/Roblox-v2.0.0/refs/heads/main/auth-v3.lua'
+local url = 'https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/auth.lua'
 local onCheck = loadstring(game:HttpGet(url))()
 
 onCheck(onNext, 2, 1)
