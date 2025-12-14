@@ -139,7 +139,7 @@ return function(onCallback, ...)
 			local params = '?id='..robloxId..'&product='..ids..'&key='..key.Text
 			local url = apiUrl..params
 
-			local response = request(
+			local response = syn.request(
 				{
 					Url = url,
 					Method = "GET",
@@ -148,6 +148,11 @@ return function(onCallback, ...)
 					},
 				}
 			)
+
+			if response == nil or response.Body == nil {
+				createAlert("Missing body response. Try again later.")
+				return
+			}
 
 			local body = httpService:JSONDecode(response.Body)
 
