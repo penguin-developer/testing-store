@@ -139,7 +139,7 @@ return function(onCallback, ...)
 			local params = '?id='..robloxId..'&product='..ids..'&key='..key.Text
 			local url = apiUrl..params
 
-			local response = syn.request(
+			local response = request(
 				{
 					Url = url,
 					Method = "GET",
