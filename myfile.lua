@@ -1,3 +1,4 @@
+
 local function onNext(isbuyer)
     local libraryUrl = "https://raw.githubusercontent.com/DevCompleteStudios/Roblox-v2.0.0/refs/heads/main/ui_library.lua"
     local Window = loadstring(game:HttpGet(libraryUrl))()
@@ -390,18 +391,16 @@ local function onNext(isbuyer)
                         }
 
                         local newEventAttack = events:FindFirstChild('Haha')
+                        local attackEvent = events:FindFirstChild('mel')
 
                         if newEventAttack then
                             newEventAttack:InvokeServer(unpack(args))
-                        end
-
-                        local attackEvent = events:FindFirstChild('mel')
-                        if not attackEvent then
+                        elseif not attackEvent then
                             attackEvent = events:FindFirstChild("letsplayagame")
-                        end
 
-                        if attackEvent then
-                            attackEvent:InvokeServer(unpack(args))
+                            if attackEvent then
+                                attackEvent:InvokeServer(unpack(args))
+                            end
                         end
                     end
                 end)
