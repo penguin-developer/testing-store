@@ -384,12 +384,15 @@ local function onNext(isbuyer)
         if isFreezeAttacksMelee or isModeAutoTransform then
             return
         end
+
         if myStats < 100000 or not attacksValues.melee then
             task.spawn(executeAllPunch)
+            isFreezeAttacksMelee = true
+            task.wait(0.1)
+            isFreezeAttacksMelee = false
             return
         end
 
-        task.spawn(executeAllPunch)
         isFreezeAttacksMelee = true
 
         task.spawn(function()
@@ -400,7 +403,7 @@ local function onNext(isbuyer)
 
                 if i >= #attacksValues.meleeAttacks - 1 then
                     attacksEnergy(pos)
-                    task.wait(0.5)
+                    task.wait(1)
                     isFreezeAttacksMelee = false
                     break
                 end
