@@ -22,7 +22,7 @@ local function onNext(isbuyer)
     }
 
     local fileNames = {
-        autofarm = 'autoFarm-devstudios-v1.txt',
+        autofarm = 'autoFarm-devstudios-v2.txt',
         transforms = 'transforms-devstudios-v1.txt',
         attacks = 'attacks-devstudios-v1.txt'
     }
@@ -59,13 +59,18 @@ local function onNext(isbuyer)
 
     local autoFarmValues = getDataFile(fileNames.autofarm) or {
         autoFarm = true,
-        autoRebirth = true,
-        autoMaxRebirth = true,
-        multiPlanets = true,
+        autoRebirth = false,
+        autoMaxRebirth = false,
+        multiPlanets = false,
         statsRequiredStartFarm = minStatsRequiredFarm,
         statsBillsPlanet = minStatsTpBillsPlanet,
         distanceTpBoss = minDistanceTp * 3,
         raidBrloly = false,
+        secureTpMode = false,
+
+        tpBillsPlanet = true,
+        tpNamekPlanet = true,
+        tpTournamentPower = true,
     }
 
     local attacksValues = getDataFile(fileNames.attacks) or {
@@ -212,11 +217,28 @@ local function onNext(isbuyer)
         end
     end
 
-    local function tpPlayer(position)
+    local function tpPlayerSlow(rootPart, frame)
+        local tolerance = 7
+        local targetPosition = frame.Position
+
+        while (rootPart.Position - targetPosition).Magnitude > tolerance do
+            rootPart.CFrame = rootPart.CFrame:Lerp(frame, 0.1)
+            task.wait()
+        end
+    end
+
+    local function tpPlayer(position, slowMode)
+        local isSlowMode = slowMode or false
+
         local _, e = pcall(function()
             local character = player.Character or player.CharacterAdded:Wait()
             local humanoid = character:FindFirstChild("HumanoidRootPart")
-            humanoid.CFrame = position
+
+            if slowMode then
+                tpPlayerSlow(humanoid, position)
+            else
+                humanoid.CFrame = position
+            end
         end)
         if e then
             addLogError("Error al tp: "..e)
@@ -317,7 +339,7 @@ local function onNext(isbuyer)
             local billsPlanetId = 5151400895
             local powerId = 114014249462644 -- T.O.P
 
-            if stats >= autoFarmValues.statsBillsPlanet then
+            if stats >= autoFarmValues.statsBillsPlanet and autoFarmValues.tpBillsPlanet then
                 if gameId ~= billsPlanetId then
                     tp:InvokeServer("Vills Planet")
                 end
@@ -325,7 +347,7 @@ local function onNext(isbuyer)
                 return true
             end
 
-            if stats >= million * 20000000 then
+            if stats >= million * 20000000 and autoFarmValues.tpTournamentPower then
                 if gameId ~= powerId then
                     tp:InvokeServer("T.O.P")
                 end
@@ -333,7 +355,7 @@ local function onNext(isbuyer)
                 return true
             end
 
-            if stats >= million then
+            if stats >= million and autoFarmValues.tpNamekPlanet then
                 if gameId ~= namekId then
                     tp:InvokeServer("Namek")
                 end
@@ -728,6 +750,30 @@ local function onNext(isbuyer)
         end)
     end
 
+    local function NoClipFn()
+        local player = game:GetService('Players').LocalPlayer
+
+        local function NoClip()
+            local s, err = pcall(function()
+                for _, b in pairs(game.Workspace:GetChildren()) do
+                    if b.Name == player.Name then
+                        for i, v in pairs(game.Workspace[player.Name]:GetChildren()) do
+                            if v:IsA("BasePart") then
+                                v.CanCollide = false
+                            end
+                        end
+                    end
+                end
+            end)
+            
+            if err then
+                warn('Internal server error in NoClip')
+            end
+        end
+
+        game:GetService('RunService').Stepped:Connect(NoClip)
+    end
+
     local function playGame()
         local character = player.Character or player.CharacterAdded:Wait()
         character.Humanoid.Health = 0
@@ -740,10 +786,11 @@ local function onNext(isbuyer)
         local timer = tick()
 
         defense.Changed:Connect(function()
-            print("Checking rebirth and planets")
             executeReb()
             tpPlanets()
         end)
+
+        NoClipFn()
 
         while not alreadyStartedScript do
             if tick() - timer >= maxSeconds then
@@ -815,6 +862,73 @@ local function onNext(isbuyer)
         end,
         onChangedFalse = function()
             updateLog("Auto farm stopped")
+        end,
+    }
+
+    local tpSecureModeSlow = {
+        value = autoFarmValues.secureTpMode,
+        title = "Secure TP (Slow)",
+        description = "Execute tp secure mode anti detect",
+        onChange = function(value)
+            autoFarmValues.secureTpMode = value
+
+            saveDataFile(fileNames.autofarm, autoFarmValues)
+        end,
+
+        onChangedTrue = function()
+        end,
+
+        onChangedFalse = function()
+        end,
+    }
+
+    local tpBillsPlanetMode = {
+        value = autoFarmValues.tpBillsPlanet,
+        title = "TP Bills planet",
+        description = "TP to planet",
+        onChange = function(value)
+            autoFarmValues.tpBillsPlanet = value
+
+            saveDataFile(fileNames.autofarm, autoFarmValues)
+        end,
+
+        onChangedTrue = function()
+        end,
+
+        onChangedFalse = function()
+        end,
+    }
+    local tpNamekPlanet = {
+        value = autoFarmValues.tpNamekPlanet,
+        title = "TP Namek",
+        description = "TP Namek planet",
+        onChange = function(value)
+            autoFarmValues.tpNamekPlanet = value
+
+            saveDataFile(fileNames.autofarm, autoFarmValues)
+        end,
+
+        onChangedTrue = function()
+        end,
+
+        onChangedFalse = function()
+        end,
+    }
+
+    local tpTournamentPower = {
+        value = autoFarmValues.tpTournamentPower,
+        title = "TP Tournament Power",
+        description = "TP to Tournament power",
+        onChange = function(value)
+            autoFarmValues.tpTournamentPower = value
+
+            saveDataFile(fileNames.autofarm, autoFarmValues)
+        end,
+
+        onChangedTrue = function()
+        end,
+
+        onChangedFalse = function()
         end,
     }
 
@@ -940,6 +1054,12 @@ local function onNext(isbuyer)
     AutoFarm:Option(autoMaxRebirth)
     AutoFarm:Option(autoRebirth)
     AutoFarm:Option(multiPlanets)
+    AutoFarm:Option(tpSecureModeSlow)
+
+    AutoFarm:Option(tpBillsPlanetMode)
+    AutoFarm:Option(tpNamekPlanet)
+    AutoFarm:Option(tpTournamentPower)
+
     AutoFarm:Input(statsTpBillsPlanet)
     AutoFarm:Input(distanceTp)
     AutoFarm:Input(statsRequired)
