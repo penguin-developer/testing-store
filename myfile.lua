@@ -631,10 +631,9 @@ local function onNext(isbuyer)
         while isPlayerAlive and autoFarmValues.autoFarm and isPlayerAlive and (questValue.Value ~= name or not bossLiving:FindFirstChild("HumanoidRootPart")) do
             local _, e = pcall(function()
                 task.spawn(autoCharge)
-                tpPlayer(questPosition * CFrame.new(0, 0, 2.5))
+                tpPlayer(questPosition * CFrame.new(0, 0, 2.5), true)
                 local isValidQuest = executeQuest(name)
                 updateLog("Start quest: "..name)
-                print("Is valid quest? = "..tostring(isValidQuest))
             end)
             if questValue.Value == name and not bossLiving:FindFirstChild("HumanoidRootPart") then
                 task.wait(1)
