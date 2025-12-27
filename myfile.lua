@@ -211,6 +211,23 @@ local function onNext(isbuyer)
         return events:FindFirstChild("Qaction"):InvokeServer(unpack(args))
     end
 
+    local function NoClip()
+        local s, err = pcall(function()
+            local character = game.Workspace:FindFirstChild(player.Name)
+            if character then
+                for _, v in pairs(character:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        v.CanCollide = false
+                    end
+                end
+            end
+        end)
+
+        if not s then
+            warn('Internal server error in NoClip:', err)
+        end
+    end
+
     local function executeReb()
         if autoFarmValues.autoRebirth then
             return events:WaitForChild("reb"):InvokeServer()
@@ -222,7 +239,8 @@ local function onNext(isbuyer)
         local targetPosition = frame.Position
 
         while (rootPart.Position - targetPosition).Magnitude > tolerance and autoFarmValues.secureTpMode do
-            rootPart.CFrame = rootPart.CFrame:Lerp(frame, 0.02)
+            task.spawn(NoClip)
+            rootPart.CFrame = rootPart.CFrame:Lerp(frame, 0.03)
             task.wait()
         end
     end
@@ -752,30 +770,6 @@ local function onNext(isbuyer)
         end)
     end
 
-    local function NoClipFn()
-        local player = game:GetService('Players').LocalPlayer
-
-        local function NoClip()
-            local s, err = pcall(function()
-                for _, b in pairs(game.Workspace:GetChildren()) do
-                    if b.Name == player.Name then
-                        for i, v in pairs(game.Workspace[player.Name]:GetChildren()) do
-                            if v:IsA("BasePart") then
-                                v.CanCollide = false
-                            end
-                        end
-                    end
-                end
-            end)
-            
-            if err then
-                warn('Internal server error in NoClip')
-            end
-        end
-
-        game:GetService('RunService').Stepped:Connect(NoClip)
-    end
-
     local function playGame()
         local character = player.Character or player.CharacterAdded:Wait()
         character.Humanoid.Health = 0
@@ -791,8 +785,6 @@ local function onNext(isbuyer)
             executeReb()
             tpPlanets()
         end)
-
-        NoClipFn()
 
         while not alreadyStartedScript do
             if tick() - timer >= maxSeconds then
