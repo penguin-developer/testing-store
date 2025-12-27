@@ -218,11 +218,11 @@ local function onNext(isbuyer)
     end
 
     local function tpPlayerSlow(rootPart, frame)
-        local tolerance = 7
+        local tolerance = 3
         local targetPosition = frame.Position
 
-        while (rootPart.Position - targetPosition).Magnitude > tolerance do
-            rootPart.CFrame = rootPart.CFrame:Lerp(frame, 0.1)
+        while (rootPart.Position - targetPosition).Magnitude > tolerance and autoFarmValues.secureTpMode do
+            rootPart.CFrame = rootPart.CFrame:Lerp(frame, 0.02)
             task.wait()
         end
     end
@@ -234,7 +234,7 @@ local function onNext(isbuyer)
             local character = player.Character or player.CharacterAdded:Wait()
             local humanoid = character:FindFirstChild("HumanoidRootPart")
 
-            if slowMode then
+            if slowMode and autoFarmValues.secureTpMode then
                 tpPlayerSlow(humanoid, position)
             else
                 humanoid.CFrame = position
