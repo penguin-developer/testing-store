@@ -185,6 +185,7 @@ local function onNext(isbuyer)
     local function executeAllPunch()
         for i = 1, 4, 1 do
             executePunch(i)
+            task.wait(0.3)
         end
     end
 
@@ -451,7 +452,7 @@ local function onNext(isbuyer)
                     warn('Error al ejecutar ataques de melee: '..y)
                 end
 
-                task.wait(0.05)
+                task.wait(0.1)
             end
         end)
     end
