@@ -526,29 +526,16 @@ local function onNext(isbuyer)
                     cancelAutoCharge()
                 end
 
-                -- if stats > million and not isValidKi(50, percent) or  humanoid.Health < humanoid.MaxHealth * 0.15 then
-                --     while (humanoid.Health < (humanoid.MaxHealth * 0.2) or not isValidKi(100, 40)) and isPlayerAlive and autoFarmValues.autoFarm do
-                --         task.spawn(function ()
-                --             autoBlock()
-                --             autoCharge()
-                --         end)
-                --         tpBack(HumanoidRootPart.CFrame)
-                --         updateLog("Waiting for min energy or health")
-                --         task.wait()
-                --     end
-                --     cancelAutoCharge()
-                -- else
-                --     task.spawn(autoBlock)
-                --     tpDistance = autoFarmValues.distanceTpBoss
-                --     tpPlayer(tpPosition)
-                --     attacks(bossLiving.Humanoid, stats, pos)
-                -- end
-
-                task.spawn(autoBlock)
-
-                tpDistance = autoFarmValues.distanceTpBoss
                 tpPlayer(tpPosition)
-                attacks(bossLiving.Humanoid, stats, pos)
+
+                if isModeAutoTransform then
+                    tpDistance = 70
+                else
+                    task.spawn(autoBlock)
+                    tpDistance = autoFarmValues.distanceTpBoss
+                    attacks(bossLiving.Humanoid, stats, pos)
+                end
+
             end)
 
             if e then
