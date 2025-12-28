@@ -18,12 +18,13 @@ local function onNext(isbuyer)
         "SSJ4", "SSJG", "LSSJ Kaioken", "Mystic Kaioken", "SSJ Rage", "Corrupt SSJ", "SSJ Blue", "SSJ Rose", "SSJ5", "LSSJ3", "SSJG4", "SSJB kaioken",
         "True Rose", "SSJ Berserker", "LSSJG", "Kefla SSJ2", "Dark Rose", "Blue Evolution", "Evil SSJ", "Ultra Instinct Omen", "Godly SSJ2", "Mastered Ultra Instinct",
         "Jiren Ultra Instinct", "God of Creation", "God of Destruction", "Super Broly", "SSJB3", "SSJR3", "True God of Destruction", "True God of Creation", "LBSSJ4",
-        "SSJB4", "Ultra Ego", "SSJBUI", "Beast", "Blanco", 'True Jui', 'CSSJB3', 'Primal Radiance', 'Primal Ruin', 'Error core: NULLSTATE'
+        "SSJB4", "Ultra Ego", "SSJBUI", "Beast", "Blanco", 'True Jui', 'CSSJB3', 'Primal Radiance', 'Primal Ruin', 'Error core: NULLSTATE', 'Primal Ego SSJ4','Northern Star','Christmas Nightmare',
+        'Ego Instinct', 'Resolution'
     }
 
     local fileNames = {
         autofarm = 'autoFarm-devstudios-v2.txt',
-        transforms = 'transforms-devstudios-v1.txt',
+        transforms = 'transforms-devstudios-v2.txt',
         attacks = 'attacks-devstudios-v1.txt'
     }
 
@@ -420,7 +421,7 @@ local function onNext(isbuyer)
 
         task.spawn(function()
             for i, melee in ipairs(attacksValues.meleeAttacks) do
-                if humanoid.Health <= 0 or isModeAutoTransform then
+                if humanoid.Health <= 0 then
                     break
                 end
 
@@ -430,6 +431,10 @@ local function onNext(isbuyer)
                 if timeSinceLastAttack < ATTACK_COOLDOWN then
                     local waitTime = ATTACK_COOLDOWN - timeSinceLastAttack
                     task.wait(waitTime)
+                end
+
+                if isModeAutoTransform then
+                    break
                 end
 
                 local x, y = pcall(function()
@@ -560,8 +565,7 @@ local function onNext(isbuyer)
         cancelAutoCharge()
 
         tpDistance = autoFarmValues.distanceTpBoss
-        isFreezeAttacksMelee = false
-        task.wait(1)
+        task.wait(1.5)
     end
 
     local function searchQuest()
@@ -609,7 +613,7 @@ local function onNext(isbuyer)
 
             local formValue = folderStatus:FindFirstChild("Transformation")
 
-            if formValue.Value == form then
+            if formValue.Value == form or isModeAutoTransform then
                 return
             end
 
@@ -630,6 +634,7 @@ local function onNext(isbuyer)
                 task.wait()
             end
 
+            task.wait(1)
             isModeAutoTransform = false
         end)
         if e then
