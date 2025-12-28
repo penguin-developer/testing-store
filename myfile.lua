@@ -450,6 +450,8 @@ local function onNext(isbuyer)
                 if y then
                     warn('Error al ejecutar ataques de melee: '..y)
                 end
+
+                task.wait(0.05)
             end
         end)
     end
