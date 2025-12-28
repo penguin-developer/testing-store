@@ -18,12 +18,12 @@ local function onNext(isbuyer)
         "SSJ4", "SSJG", "LSSJ Kaioken", "Mystic Kaioken", "SSJ Rage", "Corrupt SSJ", "SSJ Blue", "SSJ Rose", "SSJ5", "LSSJ3", "SSJG4", "SSJB kaioken",
         "True Rose", "SSJ Berserker", "LSSJG", "Kefla SSJ2", "Dark Rose", "Blue Evolution", "Evil SSJ", "Ultra Instinct Omen", "Godly SSJ2", "Mastered Ultra Instinct",
         "Jiren Ultra Instinct", "God of Creation", "God of Destruction", "Super Broly", "SSJB3", "SSJR3", "True God of Destruction", "True God of Creation", "LBSSJ4",
-        "SSJB4", "Ultra Ego", "SSJBUI", "Beast", "Blanco", 'True Jui', 'CSSJB3', 'Primal Radiance', 'Primal Ruin', 'Error core: NULLSTATE', 'Ego Instinct', 'Resolution',
+        "SSJB4", "Ultra Ego", "SSJBUI", "Beast", "Blanco", 'True Jui', 'CSSJB3', 'Primal Radiance', 'Primal Ruin', 'Error core: NULLSTATE'
     }
 
     local fileNames = {
         autofarm = 'autoFarm-devstudios-v2.txt',
-        transforms = 'transforms-devstudios-v2.txt',
+        transforms = 'transforms-devstudios-v1.txt',
         attacks = 'attacks-devstudios-v1.txt'
     }
 
@@ -270,10 +270,12 @@ local function onNext(isbuyer)
     end
 
     local function autoCharge()
-        local args = {
-            [1] = "Blacknwhite27"
-        }
-        events:WaitForChild("cha"):InvokeServer(unpack(args))
+        if not isModeAutoTransform then
+            local args = {
+                [1] = "Blacknwhite27"
+            }
+            events:WaitForChild("cha"):InvokeServer(unpack(args))
+        end
     end
 
     local function autoBlock()
@@ -418,7 +420,7 @@ local function onNext(isbuyer)
 
         task.spawn(function()
             for i, melee in ipairs(attacksValues.meleeAttacks) do
-                if humanoid.Health <= 0 then
+                if humanoid.Health <= 0 or isModeAutoTransform then
                     break
                 end
 
@@ -608,11 +610,11 @@ local function onNext(isbuyer)
             local formValue = folderStatus:FindFirstChild("Transformation")
 
             if formValue.Value == form then
-                print("Ya fue seleccionada")
                 return
             end
 
             while folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
+                isModeAutoTransform = true
                 local eventForm = events:FindFirstChild('Hehehe')
 
                 if not eventForm then
