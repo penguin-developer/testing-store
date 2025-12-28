@@ -400,7 +400,7 @@ local function onNext(isbuyer)
     end
 
     local lastAttackTime = 0
-    local ATTACK_COOLDOWN = 0.08
+    local ATTACK_COOLDOWN = 0.1
 
     local function attacksMelee(humanoid, myStats, pos)
         if isFreezeAttacksMelee or isModeAutoTransform then
@@ -411,8 +411,7 @@ local function onNext(isbuyer)
 
         if myStats < 100000 or not attacksValues.melee then
             task.spawn(executeAllPunch)
-            isFreezeAttacksMelee = true
-            task.wait(0.2)
+            task.wait(0.3)
             isFreezeAttacksMelee = false
             return
         end
@@ -429,13 +428,6 @@ local function onNext(isbuyer)
                 if timeSinceLastAttack < ATTACK_COOLDOWN then
                     local waitTime = ATTACK_COOLDOWN - timeSinceLastAttack
                     task.wait(waitTime)
-                end
-
-                if i >= #attacksValues.meleeAttacks - 1 then
-                    attacksEnergy(pos)
-                    task.wait(1)
-                    isFreezeAttacksMelee = false
-                    break
                 end
 
                 local x, y = pcall(function()
@@ -465,6 +457,11 @@ local function onNext(isbuyer)
                     warn('Error al ejecutar ataques de melee: '..y)
                 end
             end
+
+            task.wait(ATTACK_COOLDOWN / 2)
+            attacksEnergy(pos)
+            task.wait(ATTACK_COOLDOWN / 2)
+            isFreezeAttacksMelee = false
         end)
     end
 
@@ -573,8 +570,13 @@ local function onNext(isbuyer)
                 break
             end
             local _ = questsValues.questActive[boss.Name]
+            local statsQuest = quest.stats
 
-            if strength.Value >= quest.stats and npc and npc:FindFirstChild("HumanoidRootPart") and boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 and executeQuest(quest.name) then
+            if statsQuest >= 1000 then
+                statsQuest = statsQuest + (statsQuest / 10)
+            end
+
+            if strength.Value >= statsQuest and npc and npc:FindFirstChild("HumanoidRootPart") and boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 and executeQuest(quest.name) then
                 updateLog("Seleccionando la mision con el nombre: "..quest.name)
                 return quest
             end
