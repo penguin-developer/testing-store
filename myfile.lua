@@ -399,25 +399,36 @@ local function onNext(isbuyer)
         events:WaitForChild("voleys"):InvokeServer(unpack(args))
     end
 
+    local lastAttackTime = 0
+    local ATTACK_COOLDOWN = 0.08
+
     local function attacksMelee(humanoid, myStats, pos)
         if isFreezeAttacksMelee or isModeAutoTransform then
             return
         end
 
+        isFreezeAttacksMelee = true
+
         if myStats < 100000 or not attacksValues.melee then
             task.spawn(executeAllPunch)
             isFreezeAttacksMelee = true
-            task.wait(0.1)
+            task.wait(0.2)
             isFreezeAttacksMelee = false
             return
         end
-
-        isFreezeAttacksMelee = true
 
         task.spawn(function()
             for i, melee in ipairs(attacksValues.meleeAttacks) do
                 if humanoid.Health <= 0 then
                     break
+                end
+
+                local currentTime = os.clock()
+                local timeSinceLastAttack = currentTime - lastAttackTime
+
+                if timeSinceLastAttack < ATTACK_COOLDOWN then
+                    local waitTime = ATTACK_COOLDOWN - timeSinceLastAttack
+                    task.wait(waitTime)
                 end
 
                 if i >= #attacksValues.meleeAttacks - 1 then
@@ -439,11 +450,13 @@ local function onNext(isbuyer)
 
                         if newEventAttack then
                             newEventAttack:InvokeServer(unpack(args))
+                            lastAttackTime = os.clock()
                         elseif not attackEvent then
                             attackEvent = events:FindFirstChild("letsplayagame")
 
                             if attackEvent then
                                 attackEvent:InvokeServer(unpack(args))
+                                lastAttackTime = os.clock()
                             end
                         end
                     end
@@ -451,8 +464,6 @@ local function onNext(isbuyer)
                 if y then
                     warn('Error al ejecutar ataques de melee: '..y)
                 end
-
-                task.wait(0.1)
             end
         end)
     end
