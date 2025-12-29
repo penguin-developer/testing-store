@@ -1,6 +1,6 @@
 
 local function onNext(isbuyer)
-    local libraryUrl = "https://raw.githubusercontent.com/DevCompleteStudios/Roblox-v2.0.0/refs/heads/main/ui_library.lua"
+    local libraryUrl = "https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/library.lua"
     local Window = loadstring(game:HttpGet(libraryUrl))()
     local AutoFarm = Window.new("AutoFarm", "Farm")
     local Attacks = Window.new("Attacks", "Attacks")
