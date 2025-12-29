@@ -553,6 +553,8 @@ local function onNext(isbuyer)
 
         tpDistance = autoFarmValues.distanceTpBoss
         task.wait(1.5)
+
+        isFreezeAttacksMelee = false
     end
 
     local function searchQuest()
