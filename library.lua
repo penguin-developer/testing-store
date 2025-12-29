@@ -79,18 +79,18 @@ onViewDescription.TextScaled = true
 onViewDescription.TextSize = 14.000
 onViewDescription.TextWrapped = true
 
-local function onClick()
+local function onHandleFlag()
 	slider.Active = true
 	slider.Draggable = true
 
-	local function onClick()
+	local function handleClick()
 		main.Visible = not main.Visible
 	end
 
-	onClick.MouseButton1Click:Connect(onClick)
+	onClick.MouseButton1Click:Connect(handleClick)
 end
 
-onClick()
+onHandleFlag()
 
 
 
