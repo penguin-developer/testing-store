@@ -547,8 +547,6 @@ local function onNext(isbuyer)
                 addLogError("Error al atacar al jefe: "..e)
             end
             task.wait()
-
-            isFreezeAttacksMelee = false
         end
 
         cancelAutoCharge()
