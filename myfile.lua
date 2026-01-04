@@ -582,16 +582,25 @@ local function onNext(isbuyer)
     end
 
     local function selectForm()
+        if not transformsValues.autoTransform then
+            return nil
+        end
+
         for i = #transformsValues.transformsActives, 1, -1 do
             local form = transformsValues.transformsActives[i]
             if events.equipskill:InvokeServer(form) then
                 return form
             end
         end
+
         return nil
     end
 
     local function executeForm()
+        if not transformsValues.autoTransform then
+            return
+        end
+
         local s, e = pcall(function()
             local form = selectForm()
             print(form)
@@ -608,7 +617,7 @@ local function onNext(isbuyer)
                 return
             end
 
-            while folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
+            while transformsValues.autoTransform and folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
                 isModeAutoTransform = true
                 local eventForm = events:FindFirstChild('Hehehe')
 
@@ -617,7 +626,6 @@ local function onNext(isbuyer)
                 end
 
                 if not eventForm then
-                    print('No viene')
                     eventForm = events:FindFirstChild("ta")
                 end
 
