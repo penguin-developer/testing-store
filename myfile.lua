@@ -3,6 +3,7 @@ local function onNext(isbuyer)
     local libraryUrl = "https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/library.lua"
     local Window = loadstring(game:HttpGet(libraryUrl))()
     local AutoFarm = Window.new("AutoFarm", "Farm")
+    local QuestsFarm = Window.new("Bosses", "Bosses")
     local Attacks = Window.new("Attacks", "Attacks")
     local Forms = Window.new("Forms", "Forms")
     local questTextValue = { value = 'Quest: none' }
@@ -12,6 +13,7 @@ local function onNext(isbuyer)
     local minStatsTpBillsPlanet = million * 250
     local minDistanceTp = 1
     local brolyGameId = 133153710156455
+    local bossNotQuestSelected = nil
 
     local transformsDefault = {
         "Kaioken", "FSSJ", "SSJ Kaioken", "SSJ2", "SSJ2 Majin", "Spirit SSJ", "SSJ3", "SSJ2 Kaioken", "LSSJ", "Mystic",
@@ -638,7 +640,7 @@ local function onNext(isbuyer)
         local bossNpc = npcs:FindFirstChild(name)
         local bossLiving = living:FindFirstChild(quest.nickName)
 
-        if game.PlaceId == brolyGameId then
+        if game.PlaceId == brolyGameId or quest.name == bossNotQuestSelected then
             return bossLiving
         end
 
@@ -719,6 +721,7 @@ local function onNext(isbuyer)
             if not isPlayerAlive then
                 break
             end
+
             pcall(function()
                 pcall(uploadMinStatsRequired)
 
@@ -726,7 +729,9 @@ local function onNext(isbuyer)
 
                 local quest
 
-                if game.PlaceId == brolyGameId then
+                if bossNotQuestSelected ~= nil then
+                    quest = {name = bossNotQuestSelected, nickName = bossNotQuestSelected}
+                elseif game.PlaceId == brolyGameId then
                     quest = {name = 'Broccoli', nickName = 'Broccoli'}
                 else
                     quest = searchQuest()
@@ -744,6 +749,7 @@ local function onNext(isbuyer)
                 else
                     attempsSearchQuest = 0
                     local questSelected = selectQuest(quest)
+
                     if questSelected then
                         figthToQuests(questSelected)
                         while isPlayerAlive and (questValue.Value ~= '' and not selectQuest(quest) and game.PlaceId ~= brolyGameId) and autoFarmValues.autoFarm do
@@ -1069,10 +1075,59 @@ local function onNext(isbuyer)
     AutoFarm:Input(statsTpBillsPlanet)
     AutoFarm:Input(distanceTp)
     AutoFarm:Input(statsRequired)
+
     Attacks:Option(meleeOption)
     Attacks:Option(energyOption)
     Forms:Option(transformOption)
     Forms:Options(transformOptions)
+
+    local function addDynamicOptions()
+        local living = game.Workspace:FindFirstChild("Living")
+        local quests = game.Workspace:FindFirstChild("Others"):FindFirstChild("NPCs"):GetChildren()
+
+        local function getQuestByName(name)
+            local quest = nil
+
+            for _, q in pairs(quests) do
+                if q.Name == name then
+                    quest = q.Name
+                    break
+                end
+            end
+
+            return quest
+        end
+
+        for _, boss in pairs(living:GetChildren()) do
+            print(quests[boss.Name])
+            if boss:FindFirstChild("NPC") and getQuestByName(boss.Name) == nil then
+                local optionBoss = {
+                    value = false,
+                    title = "Kill "..boss.Name,
+                    description = "Execute auto transform xd",
+
+                    onChange = function(value)
+                    end,
+
+                    onChangedTrue = function(value)
+                        if bossNotQuestSelected ~= boss.Name then
+                            bossNotQuestSelected = boss.Name
+                        end
+                    end,
+
+                    onChangedFalse = function(value)
+                        if bossNotQuestSelected == boss.Name then
+                            bossNotQuestSelected = nil
+                        end
+                    end,
+                }
+
+                QuestsFarm:Option(optionBoss)
+                print(boss.Name.." es un boss que no tiene mision")
+            end
+        end
+    end
+
 
     pcall(checkQuests)
     playGame()
