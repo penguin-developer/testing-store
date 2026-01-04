@@ -1128,6 +1128,7 @@ local function onNext(isbuyer)
         end
     end
 
+    addDynamicOptions()
 
     pcall(checkQuests)
     playGame()
