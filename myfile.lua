@@ -725,51 +725,47 @@ local function onNext(isbuyer)
     local alreadyStartedScript = false
 
     local function onStartFarm()
-        while autoFarmValues.autoFarm do
-            if not isPlayerAlive then
-                break
-            end
+        while task.wait() and isPlayerAlive do
+            if autoFarmValues.autoFarm then
+                pcall(function()
+                    pcall(uploadMinStatsRequired)
 
-            pcall(function()
-                pcall(uploadMinStatsRequired)
+                    task.spawn(executeForm)
 
-                task.spawn(executeForm)
+                    local quest
 
-                local quest
-
-                if bossNotQuestSelected ~= nil then
-                    quest = {name = bossNotQuestSelected, nickName = bossNotQuestSelected}
-                elseif game.PlaceId == brolyGameId then
-                    quest = {name = 'Broccoli', nickName = 'Broccoli'}
-                else
-                    quest = searchQuest()
-                end
-
-                if attempsSearchQuest >= maxAttempsSearchQuest then
-                    updateLog("No se encontro una mision, reiniciando!")
-                    attempsSearchQuest = 0
-                end
-                if not quest then
-                    attempsSearchQuest = attempsSearchQuest + 1
-                    updateLog("No se encontro una mision, revisando de nuevo las misiones")
-                    task.wait(2)
-                    pcall(checkQuests)
-                else
-                    attempsSearchQuest = 0
-                    local questSelected = selectQuest(quest)
-
-                    if questSelected then
-                        figthToQuests(questSelected)
-                        while isPlayerAlive and (questValue.Value ~= '' and not selectQuest(quest) and game.PlaceId ~= brolyGameId) and autoFarmValues.autoFarm do
-                            task.wait()
-                        end
+                    if bossNotQuestSelected ~= nil then
+                        quest = {name = bossNotQuestSelected, nickName = bossNotQuestSelected}
+                    elseif game.PlaceId == brolyGameId then
+                        quest = {name = 'Broccoli', nickName = 'Broccoli'}
                     else
-                        print("No viene nadie con quien pelear")
+                        quest = searchQuest()
                     end
-                end
-            end)
 
-            task.wait()
+                    if attempsSearchQuest >= maxAttempsSearchQuest then
+                        updateLog("No se encontro una mision, reiniciando!")
+                        attempsSearchQuest = 0
+                    end
+                    if not quest then
+                        attempsSearchQuest = attempsSearchQuest + 1
+                        updateLog("No se encontro una mision, revisando de nuevo las misiones")
+                        task.wait(2)
+                        pcall(checkQuests)
+                    else
+                        attempsSearchQuest = 0
+                        local questSelected = selectQuest(quest)
+
+                        if questSelected then
+                            figthToQuests(questSelected)
+                            while isPlayerAlive and (questValue.Value ~= '' and not selectQuest(quest) and game.PlaceId ~= brolyGameId) and autoFarmValues.autoFarm do
+                                task.wait()
+                            end
+                        else
+                            print("No viene nadie con quien pelear")
+                        end
+                    end
+                end)
+            end
         end
     end
 
@@ -782,14 +778,16 @@ local function onNext(isbuyer)
                 print("Esperando a que reviva")
             end
 
+            alreadyStartedScript = true
             isPlayerAlive = true
 
             char:WaitForChild("Humanoid").Died:Connect(function()
-                print("Murio")
                 isPlayerAlive = false
+                print("Murio")
             end)
 
             local _, e = pcall(onStartFarm)
+
             if e then
                 addLogError("Main error: "..e)
             end
@@ -803,9 +801,10 @@ local function onNext(isbuyer)
         events.Start:InvokeServer()
         updateLog("Loading script...")
         local playerEvent
+
         playerEvent = onStartPlayer()
         local maxSeconds = 10
-        local timer = tick()
+        local timer = tick() -- 11:20
 
         defense.Changed:Connect(function()
             executeReb()
@@ -814,6 +813,8 @@ local function onNext(isbuyer)
 
         while not alreadyStartedScript do
             if tick() - timer >= maxSeconds then
+                character = player.Character or player.CharacterAdded:Wait()
+
                 updateLog("Loading again...")
                 timer = tick()
                 playerEvent:Disconnect()
