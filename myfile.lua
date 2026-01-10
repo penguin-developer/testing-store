@@ -12,7 +12,6 @@ local function onNext(isbuyer)
     local minStatsRequiredFarm = 20000
     local minStatsTpBillsPlanet = million * 250
     local minDistanceTp = 1
-    local brolyGameId = 133153710156455
     local bossNotQuestSelected = nil
 
     local transformsDefault = {
@@ -22,6 +21,18 @@ local function onNext(isbuyer)
         "Jiren Ultra Instinct", "God of Creation", "God of Destruction", "Super Broly", "SSJB3", "SSJR3", "True God of Destruction", "True God of Creation", "LBSSJ4",
         "SSJB4", "Ultra Ego", "SSJBUI", "Beast", "Blanco", 'True Jui', 'CSSJB3', 'Primal Radiance', 'Primal Ruin', 'Error core: NULLSTATE', 'Primal Ego SSJ4','Northern Star','Christmas Nightmare',
         'Ego Instinct', 'Resolution'
+    }
+
+    local raidsValues = {
+        BrolyRaid = {
+            placeID = 133153710156455,
+            boss = 'Broly'
+        },
+
+        HellRaid = {
+            placeID = 133153710156455,
+            boss = 'Goheta'
+        },
     }
 
     local fileNames = {
@@ -68,13 +79,17 @@ local function onNext(isbuyer)
         statsRequiredStartFarm = minStatsRequiredFarm,
         statsBillsPlanet = minStatsTpBillsPlanet,
         distanceTpBoss = minDistanceTp * 3,
-        raidBrloly = false,
         secureTpMode = false,
-
         tpBillsPlanet = true,
         tpNamekPlanet = true,
         tpTournamentPower = true,
     }
+
+    for name, _ in pairs(raidsValues) do
+        if autoFarmValues[name] == nil then
+            autoFarmValues[name] = false
+        end
+    end
 
     local attacksValues = getDataFile(fileNames.attacks) or {
         melee = true,
@@ -349,8 +364,17 @@ local function onNext(isbuyer)
 
     local function tpPlanets()
         local succes, res = pcall(function()
-            if autoFarmValues.raidBrloly and game.PlaceId ~= brolyGameId then
-                tp:InvokeServer("BrolyRaid")
+            local isRaid = false
+
+            for idx, v in pairs(autoFarmValues) do
+                if v and raidsValues[idx] then
+                    tp:InvokeServer(idx)
+                    isRaid = true
+                    break
+                end
+            end
+
+            if isRaid then
                 return
             end
 
@@ -647,8 +671,20 @@ local function onNext(isbuyer)
         local name = quest.name
         local bossNpc = npcs:FindFirstChild(name)
         local bossLiving = living:FindFirstChild(quest.nickName)
+        local isOtherQuest = false
 
-        if game.PlaceId == brolyGameId or quest.name == bossNotQuestSelected then
+        if quest.name == bossNotQuestSelected then
+            return bossLiving
+        end
+
+        for _, v in pairs(raidsValues) do
+            if v.placeID == game.PlaceId then
+                isOtherQuest = true
+                break
+            end
+        end
+
+        if isOtherQuest then
             return bossLiving
         end
 
@@ -736,9 +772,16 @@ local function onNext(isbuyer)
 
                     if bossNotQuestSelected ~= nil then
                         quest = {name = bossNotQuestSelected, nickName = bossNotQuestSelected}
-                    elseif game.PlaceId == brolyGameId then
-                        quest = {name = 'Broccoli', nickName = 'Broccoli'}
                     else
+                        for bossName, v in pairs(raidsValues) do
+                            if autoFarmValues[bossName] then
+                                quest = {name = v.boss, nickName = v.boss}
+                                break
+                            end
+                        end
+                    end
+
+                    if quest == nil then
                         quest = searchQuest()
                     end
 
@@ -837,22 +880,6 @@ local function onNext(isbuyer)
         end,
         onChangedFalse = function()
             updateLog("Auto farm stopped")
-        end,
-    }
-
-    local raidBroly = {
-        value = autoFarmValues.raidBrloly,
-        title = 'Broly Raid',
-        description = 'Raid broly',
-        onChange = function(value)
-            autoFarmValues.raidBrloly = value
-            saveDataFile(fileNames.autofarm, autoFarmValues)
-        end,
-
-        onChangedTrue = function()
-        end,
-
-        onChangedFalse = function()
         end,
     }
 
@@ -1071,7 +1098,31 @@ local function onNext(isbuyer)
     }
 
     AutoFarm:Option(autoFarm)
-    AutoFarm:Option(raidBroly)
+
+    for quest, _ in pairs(raidsValues) do
+        if autoFarmValues[quest] ~= nil then
+            local raidValue = {
+                value = autoFarmValues[quest],
+                title = quest..' - Raid',
+
+                description = quest..' Raid',
+
+                onChange = function(value)
+                    autoFarmValues[quest] = value
+                    saveDataFile(fileNames.autofarm, autoFarmValues)
+                end,
+
+                onChangedTrue = function()
+                end,
+
+                onChangedFalse = function()
+                end,
+            }
+
+            AutoFarm:Option(raidValue)
+        end
+    end
+
     AutoFarm:Option(autoMaxRebirth)
     AutoFarm:Option(autoRebirth)
     AutoFarm:Option(multiPlanets)
