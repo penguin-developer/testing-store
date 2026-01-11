@@ -779,7 +779,7 @@ local function onNext(isbuyer)
                             local boss = getBossLiving(q)
 
                             if boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 then
-                                quest = {name = bossNotQuestSelected, nickName = bossNotQuestSelected}
+                                quest = {name = q, nickName = q}
                                 break
                             end
                         end
