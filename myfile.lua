@@ -659,7 +659,7 @@ local function onNext(isbuyer)
 
                     eventForm:InvokeServer()
                 else
-                    eventForm:Fire(player.Name, folderStatus.Transformation.Value)
+                    eventForm:FireServer(player.Name, folderStatus.Transformation.Value)
                 end
 
                 task.wait()
