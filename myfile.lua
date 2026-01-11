@@ -651,10 +651,10 @@ local function onNext(isbuyer)
                 if event then
                     event:InvokeServer()
                 else
-                    event = events:FindFirstChild('a'):FindFirstChild('Cece')
+                    event = events:FindFirstChild('a')
 
                     if event then
-                        event:InvokeServer()
+                        event:FindFirstChild('Cece'):InvokeServer()
                     else
                         game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
                     end
