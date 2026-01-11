@@ -644,7 +644,7 @@ local function onNext(isbuyer)
 
             while transformsValues.autoTransform and folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
                 pcall(function ()
-                    events:FindFirstChild('traef'):FireServer(player.Name, folderStatus.Transformation.Value)
+                    events:FindFirstChild('traef'):FireServer(folderStatus.Transformation.Value)
                     events:FindFirstChild('Hehehe'):InvokeServer()
                     events:FindFirstChild('a'):FindFirstChild('Cece'):InvokeServer()
                     events:FindFirstChild("ta"):InvokeServer()
