@@ -12,7 +12,7 @@ local function onNext(isbuyer)
     local minStatsRequiredFarm = 20000
     local minStatsTpBillsPlanet = million * 250
     local minDistanceTp = 1
-    local bossNotQuestSelected = nil
+    local bossNotQuestSelected = {}
 
     local transformsDefault = {
         "Kaioken", "FSSJ", "SSJ Kaioken", "SSJ2", "SSJ2 Majin", "Spirit SSJ", "SSJ3", "SSJ2 Kaioken", "LSSJ", "Mystic",
@@ -584,9 +584,13 @@ local function onNext(isbuyer)
         isFreezeAttacksMelee = false
     end
 
+    local function getBossLiving(bossName)
+        return living:FindFirstChild(bossName)
+    end
+
     local function searchQuest()
         for _, quest in pairs(quests) do
-            local boss = living:FindFirstChild(quest.nickName)
+            local boss = getBossLiving(quest.nickName)
             local npc = npcs:FindFirstChild(quest.name)
             if not isPlayerAlive then
                 break
@@ -671,8 +675,10 @@ local function onNext(isbuyer)
         local bossLiving = living:FindFirstChild(quest.nickName)
         local isOtherQuest = false
 
-        if quest.name == bossNotQuestSelected then
-            return bossLiving
+        for _, v in pairs(bossNotQuestSelected) do
+            if quest.name == v then
+                return bossLiving
+            end
         end
 
         for _, v in pairs(raidsValues) do
@@ -768,8 +774,13 @@ local function onNext(isbuyer)
 
                     local quest
 
-                    if bossNotQuestSelected ~= nil then
-                        quest = {name = bossNotQuestSelected, nickName = bossNotQuestSelected}
+                    if #bossNotQuestSelected > 0 then
+                        for _, q in pairs() do
+                            if living:FindFirstChild(q) and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 then
+                                quest = {name = bossNotQuestSelected, nickName = bossNotQuestSelected}
+                                break
+                            end
+                        end
                     else
                         for bossName, v in pairs(raidsValues) do
                             if autoFarmValues[bossName] then
@@ -1156,6 +1167,16 @@ local function onNext(isbuyer)
             return quest
         end
 
+        local function getIndexBossInNotQuests(name)
+            for i, q in pairs(bossNotQuestSelected) do
+                if q == name then
+                    return i
+                end
+            end
+
+            return 0
+        end
+
         for _, boss in pairs(living:GetChildren()) do
             print(quests[boss.Name])
             if boss:FindFirstChild("NPC") and getQuestByName(boss.Name) == nil then
@@ -1168,15 +1189,14 @@ local function onNext(isbuyer)
                     end,
 
                     onChangedTrue = function(value)
-                        if bossNotQuestSelected ~= boss.Name then
-                            bossNotQuestSelected = boss.Name
-                        end
+                        table.insert(bossNotQuestSelected, boss.Name)
                     end,
 
                     onChangedFalse = function(value)
-                        if bossNotQuestSelected == boss.Name then
-                            bossNotQuestSelected = nil
-                        end
+                        local index = getIndexBossInNotQuests(boss.Name)
+                        if index == 0 then return end
+
+                        table.remove(bossNotQuestSelected, index)
                     end,
                 }
 
