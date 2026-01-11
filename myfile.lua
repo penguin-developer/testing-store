@@ -479,10 +479,11 @@ local function onNext(isbuyer)
                         elseif not attackEvent then
                             attackEvent = events:FindFirstChild("letsplayagame")
 
-                            if attackEvent then
-                                attackEvent:InvokeServer(unpack(args))
-                                lastAttackTime = os.clock()
-                            end
+                            attackEvent:InvokeServer(unpack(args))
+                            lastAttackTime = os.clock()
+                        else
+                            attackEvent:InvokeServer(unpack(args))
+                            lastAttackTime = os.clock()
                         end
                     end
                 end)
