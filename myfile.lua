@@ -643,13 +643,22 @@ local function onNext(isbuyer)
             end
 
             while transformsValues.autoTransform and folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
-                pcall(function ()
-                    events:FindFirstChild('Hehehe'):InvokeServer()
-                    events:FindFirstChild('a'):FindFirstChild('Cece'):eventForm:InvokeServer()
-                    events:FindFirstChild("ta"):eventForm:InvokeServer()
-                    events:FindFirstChild("traef"):eventForm:InvokeServer()
-                end)
+                isModeAutoTransform = true
+                local eventForm = events:FindFirstChild('Hehehe')
 
+                if not eventForm then
+                    eventForm = events:FindFirstChild('a'):FindFirstChild('Cece')
+                end
+
+                if not eventForm then
+                    eventForm = events:FindFirstChild("ta")
+                end
+
+                if not eventForm then
+                    eventForm = events:FindFirstChild("traef")
+                end
+
+                eventForm:InvokeServer()
                 task.wait()
             end
 
