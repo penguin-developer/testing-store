@@ -790,10 +790,10 @@ local function onNext(isbuyer)
                                 break
                             end
                         end
-                    end
 
-                    if quest == nil then
-                        quest = searchQuest()
+                        if quest == nil then
+                            quest = searchQuest()
+                        end
                     end
 
                     if attempsSearchQuest >= maxAttempsSearchQuest then
