@@ -648,17 +648,20 @@ local function onNext(isbuyer)
 
                 if not eventForm then
                     eventForm = events:FindFirstChild('Hehehe')
+
+                    if not eventForm then
+                        eventForm = events:FindFirstChild('a'):FindFirstChild('Cece')
+                    end
+
+                    if not eventForm then
+                        eventForm = events:FindFirstChild("ta")
+                    end
+
+                    eventForm:InvokeServer()
+                else
+                    eventForm:Fire(player.Name, folderStatus.Transformation.Value)
                 end
 
-                if not eventForm then
-                    eventForm = events:FindFirstChild('a'):FindFirstChild('Cece')
-                end
-
-                if not eventForm then
-                    eventForm = events:FindFirstChild("ta")
-                end
-
-                eventForm:InvokeServer()
                 task.wait()
             end
 
