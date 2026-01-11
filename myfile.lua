@@ -654,10 +654,6 @@ local function onNext(isbuyer)
                     eventForm = events:FindFirstChild("ta")
                 end
 
-                if not eventForm then
-                    eventForm = events:FindFirstChild("traef")
-                end
-
                 eventForm:InvokeServer()
                 task.wait()
             end
