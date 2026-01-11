@@ -644,7 +644,11 @@ local function onNext(isbuyer)
 
             while transformsValues.autoTransform and folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
                 isModeAutoTransform = true
-                local eventForm = events:FindFirstChild('Hehehe')
+                local eventForm = events:FindFirstChild('traef')
+
+                if not eventForm then
+                    eventForm = events:FindFirstChild('Hehehe')
+                end
 
                 if not eventForm then
                     eventForm = events:FindFirstChild('a'):FindFirstChild('Cece')
