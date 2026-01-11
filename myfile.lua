@@ -632,7 +632,6 @@ local function onNext(isbuyer)
 
         local s, e = pcall(function()
             local form = selectForm()
-            print(form)
 
             local folderStatus = player:FindFirstChild("Status")
             if not form or not folderStatus == form then
@@ -647,12 +646,19 @@ local function onNext(isbuyer)
             end
 
             while transformsValues.autoTransform and folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
-                pcall(function ()
-                    events:FindFirstChild('traef'):FireServer(folderStatus.Transformation.Value)
-                    events:FindFirstChild('Hehehe'):InvokeServer()
-                    events:FindFirstChild('a'):FindFirstChild('Cece'):InvokeServer()
-                    events:FindFirstChild("ta"):InvokeServer()
-                end)
+                local event = events:FindFirstChild('Hehehe')
+
+                if event then
+                    event:InvokeServer()
+                else
+                    event = events:FindFirstChild('a'):FindFirstChild('Cece')
+
+                    if event then
+                        event:InvokeServer()
+                    else
+                        game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
+                    end
+                end
 
                 isModeAutoTransform = true
 
