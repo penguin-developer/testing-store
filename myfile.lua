@@ -765,16 +765,6 @@ local function onNext(isbuyer)
     local alreadyStartedScript = false
 
     local function onStartFarm()
-        local _, fall = pcall(function ()
-            if game.PrivateServerId == "" then
-                game.Players.LocalPlayer:Kick("Server public detected")
-            end
-        end)
-
-        if fall then
-            warn('Error checking private server: '..fall)
-        end
-
         while task.wait() and isPlayerAlive do
             if autoFarmValues.autoFarm then
                 pcall(function()
@@ -887,6 +877,19 @@ local function onNext(isbuyer)
             end
             task.wait()
         end
+
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+
+        if #Players:GetPlayers() > 1 then
+            LocalPlayer:Kick("Server public detected")
+        end
+
+        Players.PlayerAdded:Connect(function(player)
+            if player ~= LocalPlayer then
+                LocalPlayer:Kick("Server public detected")
+            end
+        end)
     end
 
     local autoFarm = {
