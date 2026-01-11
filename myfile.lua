@@ -776,7 +776,9 @@ local function onNext(isbuyer)
 
                     if #bossNotQuestSelected > 0 then
                         for _, q in pairs(bossNotQuestSelected) do
-                            if living:FindFirstChild(q) and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 then
+                            local boss = getBossLiving(q)
+
+                            if boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 then
                                 quest = {name = bossNotQuestSelected, nickName = bossNotQuestSelected}
                                 break
                             end
