@@ -20,7 +20,7 @@ local function onNext(isbuyer)
         "True Rose", "SSJ Berserker", "LSSJG", "Kefla SSJ2", "Dark Rose", "Blue Evolution", "Evil SSJ", "Ultra Instinct Omen", "Godly SSJ2", "Mastered Ultra Instinct",
         "Jiren Ultra Instinct", "God of Creation", "God of Destruction", "Super Broly", "SSJB3", "SSJR3", "True God of Destruction", "True God of Creation", "LBSSJ4",
         "SSJB4", "Ultra Ego", "SSJBUI", "Beast", "Blanco", 'True Jui', 'CSSJB3', 'Primal Radiance', 'Primal Ruin', 'Error core: NULLSTATE', 'Primal Ego SSJ4','Northern Star','Christmas Nightmare',
-        'Ego Instinct', 'Resolution', ''
+        'Ego Instinct', 'Resolution'
     }
 
     local raidsValues = {
@@ -643,10 +643,8 @@ local function onNext(isbuyer)
             end
 
             while transformsValues.autoTransform and folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
-                isModeAutoTransform = true
-
                 pcall(function ()
-                    local eventForm = events:FindFirstChild('Hehehe')
+                    events:FindFirstChild('Hehehe'):InvokeServer()
                     events:FindFirstChild('a'):FindFirstChild('Cece'):eventForm:InvokeServer()
                     events:FindFirstChild("ta"):eventForm:InvokeServer()
                     events:FindFirstChild("traef"):eventForm:InvokeServer()
