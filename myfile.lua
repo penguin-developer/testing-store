@@ -505,7 +505,7 @@ local function onNext(isbuyer)
 
     local function checkBoss(bossLiving)
         local success, result = pcall(function()
-            return bossLiving.Humanoid.Health and bossLiving.Humanoid.Health > 0 and isPlayerAlive and autoFarmValues.autoFarm
+            return bossLiving.Humanoid.Health and bossLiving.Humanoid.Health > 0
         end)
         if success then
             return result and isPlayerAlive
@@ -534,7 +534,7 @@ local function onNext(isbuyer)
             percent = 15
         end
 
-        while checkBoss(bossLiving) do
+        while checkBoss(bossLiving) and isPlayerAlive and autoFarmValues.autoFarm do
             local _, e = pcall(function()
                 local HumanoidRootPart = bossLiving:FindFirstChild("HumanoidRootPart")
                 local pos = HumanoidRootPart.CFrame
@@ -574,6 +574,13 @@ local function onNext(isbuyer)
                 addLogError("Error al atacar al jefe: "..e)
             end
             task.wait()
+        end
+
+        for _, v in pairs(raidsValues) do
+            while gameId == v.placeID and not checkBoss(bossLiving) and task.wait() do
+                tp:InvokeServer("Earth")
+                print("TP to earth finaly...")
+            end
         end
 
         cancelAutoCharge()
