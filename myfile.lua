@@ -1306,7 +1306,7 @@ local function onNext(isbuyer)
     AutoFarm:Input(distanceTp)
     AutoFarm:Input(statsRequired)
 
-    AutoFuse:Input(autoFuseOption)
+    AutoFuse:Option(autoFuseOption)
 
     Attacks:Option(meleeOption)
     Attacks:Option(energyOption)
