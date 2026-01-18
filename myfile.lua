@@ -798,7 +798,7 @@ local function onNext(isbuyer)
                         end
                     else
                         for bossName, v in pairs(raidsValues) do
-                            if autoFarmValues[bossName] then
+                            if autoFarmValues[bossName] and living:FindFirstChild(v.boss) then
                                 quest = {name = v.boss, nickName = v.boss}
                                 break
                             end
