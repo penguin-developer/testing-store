@@ -6,6 +6,8 @@ local function onNext(isbuyer)
     local QuestsFarm = Window.new("Bosses", "Bosses")
     local Attacks = Window.new("Attacks", "Attacks")
     local Forms = Window.new("Forms", "Forms")
+    local AutoFuse = Window.new("Fuse", "Fuse")
+
     local questTextValue = { value = 'Quest: none' }
     local million = 1000000
     local httpService = game:GetService('HttpService')
@@ -38,7 +40,8 @@ local function onNext(isbuyer)
     local fileNames = {
         autofarm = 'autoFarm-devstudios-v2.txt',
         transforms = 'transforms-devstudios-v3.txt',
-        attacks = 'attacks-devstudios-v1.txt'
+        attacks = 'attacks-devstudios-v1.txt',
+        fuse = 'fuse-devstudios-v1.txt',
     }
 
     local function saveDataFile(name, value)
@@ -83,6 +86,10 @@ local function onNext(isbuyer)
         tpBillsPlanet = true,
         tpNamekPlanet = true,
         tpTournamentPower = true,
+    }
+
+    local autoFuseValues = getDataFile(fileNames.fuse) or {
+        autoFuse = false,
     }
 
     for name, _ in pairs(raidsValues) do
@@ -798,6 +805,98 @@ local function onNext(isbuyer)
     local alreadyStartedScript = false
 
     local function onStartFarm()
+        local attemps = 0
+        local MAX_ATTEMPS = 20
+        local players = game:GetService("Players")
+
+        while #players:GetPlayers() <= 1 and task.wait(1) and attemps < MAX_ATTEMPS and autoFuseValues.autoFuse do
+            attemps = attemps + 1
+        end
+
+        local player = players.LocalPlayer
+
+        local function executeAutoFuse(playerToFuse)
+            local statusFolder = player:FindFirstChild("Status")
+
+            if statusFolder then
+                local fusionTarget = statusFolder:FindFirstChild("Fused")
+
+                while string.lower(fusionTarget.Value) ~= string.lower(playerToFuse.Name) and task.wait() and autoFuseValues.autoFuse and attemps < MAX_ATTEMPS do
+                    local success, internalErr = pcall(function()
+                        local cframe = playerToFuse.Character.HumanoidRootPart.CFrame
+
+                        player.Character.HumanoidRootPart.CFrame = cframe
+
+                        local args = {
+                            [1] = "Fusion",
+                            [2] = {
+                                ["MouseHit"] = cframe
+                            }
+                        }
+
+                        game:GetService("ReplicatedStorage").Package.Events.Fuse:InvokeServer(unpack(args))
+                        print("Fusionando...")
+                    end)
+
+                    if internalErr ~= nil then
+                        warn("Internal server error: "..internalErr)
+                        task.wait(1)
+                    end
+                end
+            end
+        end
+
+        local function checkFusionTargetEvent(v)
+            local _, fall = pcall(function()
+                local statusFolder = v:FindFirstChild("Status")
+
+                if statusFolder then
+                    local fusionTarget = statusFolder:FindFirstChild("FusionTarget")
+                    local event
+
+                    if fusionTarget.Value == player.Name then
+                        executeAutoFuse(v)
+                    else
+                        event = fusionTarget.Changed:Connect(function(value)
+                            print(value)
+                            if string.lower(value) == string.lower(player.Name) then
+                                executeAutoFuse(v)
+                            end
+
+                            print("Fuse Changed: "..value)
+                        end)
+
+                        local humanoid = v.Character:WaitForChild("Humanoid")
+
+                        humanoid.Died:Connect(function()
+                            if event then
+                                event:Disconnect()
+                            end
+                        end) 
+                    end
+                end
+            end)
+
+            if fall then
+                warn("Error checking fusion target: "..fall)
+            end
+        end
+
+        for _, v in pairs(players:GetPlayers()) do
+            checkFusionTargetEvent(v)
+        end
+
+        players.PlayerAdded:Connect(function(p)
+            task.wait(3)
+            checkFusionTargetEvent(p)
+        end)
+
+        player.CharacterAdded:Connect(function()
+            for _, v in pairs(players:GetPlayers()) do
+                checkFusionTargetEvent(v)
+            end
+        end)
+
         while task.wait() and isPlayerAlive do
             if autoFarmValues.autoFarm then
                 pcall(function()
@@ -1139,6 +1238,20 @@ local function onNext(isbuyer)
         end,
     }
 
+    local autoFuseOption = {
+        value = autoFuseValues.autoFuse,
+        title = "Detect auto fuse",
+        description = "Execute auto fuse",
+        onChange = function(value)
+            autoFuseValues.autoFuse = value
+            saveDataFile(fileNames.fuse, autoFuseValues)
+        end,
+        onChangedTrue = function(value)
+        end,
+        onChangedFalse = function(value)
+        end,
+    }
+
     local transformOptions = {
         defaultValue = transformsDefault,
         actives = transformsValues.transformsActives,
@@ -1192,6 +1305,8 @@ local function onNext(isbuyer)
     AutoFarm:Input(statsTpBillsPlanet)
     AutoFarm:Input(distanceTp)
     AutoFarm:Input(statsRequired)
+
+    AutoFuse:Input(autoFuseOption)
 
     Attacks:Option(meleeOption)
     Attacks:Option(energyOption)
