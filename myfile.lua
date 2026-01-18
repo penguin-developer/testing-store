@@ -423,9 +423,26 @@ local function onNext(isbuyer)
         end
     end
 
-    local function attacksEnergy(position)
-        local args = {[1] = "Energy Volley", [2] = {["FaceMouse"] = true, ["MouseHit"] = position}, [3] = "Blacknwhite27"}
-        events:WaitForChild("voleys"):InvokeServer(unpack(args))
+    local attacks = {
+        {
+            name = 'Energy Volley',
+            event = 'voleys'
+        },
+    }
+
+    local function attacksEnergy(position, humanoid)
+        if humanoid.Health <= 0 then
+            return
+        end
+
+        local s, fall = pcall(function ()
+            local args = {[1] = "Energy Volley", [2] = {["FaceMouse"] = true, ["MouseHit"] = position}, [3] = "Blacknwhite27"}
+            events:WaitForChild("voleys"):InvokeServer(unpack(args))
+        end)
+    
+        if fall then
+            warn("Error in attacks energy: "..fall)
+        end
     end
 
     local lastAttackTime = 0
@@ -446,8 +463,10 @@ local function onNext(isbuyer)
         end
 
         task.spawn(function()
+            attacksEnergy(pos, humanoid)
+
             for i, melee in ipairs(attacksValues.meleeAttacks) do
-                if humanoid.Health <= 0 then
+                if humanoid.Health <= 0 or not autoFarmValues.autoFarm then
                     break
                 end
 
@@ -493,7 +512,9 @@ local function onNext(isbuyer)
             end
 
             task.wait(ATTACK_COOLDOWN / 2)
-            attacksEnergy(pos)
+
+            attacksEnergy(pos, humanoid)
+
             task.wait(ATTACK_COOLDOWN / 2)
             isFreezeAttacksMelee = false
         end)
@@ -653,6 +674,7 @@ local function onNext(isbuyer)
             end
 
             while transformsValues.autoTransform and folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
+                isModeAutoTransform = true
                 local event = events:FindFirstChild('Hehehe')
 
                 if event then
@@ -667,12 +689,10 @@ local function onNext(isbuyer)
                     end
                 end
 
-                isModeAutoTransform = true
-
                 task.wait()
             end
 
-            task.wait(1)
+            task.wait()
             isModeAutoTransform = false
         end)
         if e then
