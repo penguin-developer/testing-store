@@ -1013,7 +1013,7 @@ local function onNext(isbuyer)
         local Players = game:GetService("Players")
         local LocalPlayer = Players.LocalPlayer
 
-        if #Players:GetPlayers() > 1 then
+        if #Players:GetPlayers() > 2 then
             LocalPlayer:Kick("Server public detected")
         end
 
