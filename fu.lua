@@ -18,6 +18,8 @@ local function getPlayerByName(name)
     return nil
 end
 
+local playerToFuse = getPlayerByName(playerFuse)
+
 players.PlayerAdded:Connect(function(player)
     if playerToFuse == nil then
         playerToFuse = getPlayerByName(playerFuse)
@@ -29,8 +31,6 @@ players.PlayerRemoving:Connect(function(player)
         attemps = maxAttemps
     end
 end)
-
-local playerToFuse = getPlayerByName(playerFuse)
 
 local function executeFuse()
     while fusionTarget.Value ~= playerFuse and attemps < maxAttemps do
