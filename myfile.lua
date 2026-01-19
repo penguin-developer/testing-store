@@ -820,9 +820,7 @@ local function onNext(isbuyer)
             local statusFolder = player:FindFirstChild("Status")
 
             if statusFolder then
-                local fusionTarget = statusFolder:FindFirstChild("Fused")
-
-                while string.lower(fusionTarget.Value) ~= string.lower(playerToFuse.Name) and task.wait() and autoFuseValues.autoFuse and attemps < MAX_ATTEMPS do
+                while string.lower(statusFolder:FindFirstChild("Fused").Value) ~= string.lower(playerToFuse.Name) and task.wait() and autoFuseValues.autoFuse and attemps < MAX_ATTEMPS do
                     isModeAutoFuse = true
                     pcall(uploadMinStatsRequired)
 
