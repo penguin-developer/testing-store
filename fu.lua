@@ -7,7 +7,6 @@ local plr = players.LocalPlayer
 local fusionTarget = plr:FindFirstChild("Status"):FindFirstChild("FusionTarget")
 local playerFuse = 'Angular_Dev'
 
-
 local function getPlayerByName(name)
     for _, p in ipairs(players:GetPlayers()) do
         if string.lower(p.Name) == string.lower(name) then
@@ -20,30 +19,18 @@ end
 
 local playerToFuse = getPlayerByName(playerFuse)
 
-players.PlayerAdded:Connect(function(player)
-    if playerToFuse == nil then
-        playerToFuse = getPlayerByName(playerFuse)
-    end
-end)
-
-players.PlayerRemoving:Connect(function(player)
-    if playerToFuse ~= nil and string.lower(player.Name) == string.lower(playerFuse) then
-        attemps = maxAttemps
-    end
-end)
-
 local function executeFuse()
     while fusionTarget.Value ~= playerFuse and attemps < maxAttemps do
         local _, internalError = pcall(function()
             if playerToFuse == nil then
                 task.wait(1)
                 attemps = attemps + 1
+                playerToFuse = getPlayerByName(playerFuse)
             else
                 local cframe = playerToFuse.Character.HumanoidRootPart.CFrame
                 plr.Character.HumanoidRootPart.CFrame = cframe
-                task.wait()
 
-                print("Haciendo TP...")
+                print("Haciendo TP V2...")
 
                 local args = {
                     [1] = "Fusion",
