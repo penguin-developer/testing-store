@@ -822,6 +822,8 @@ local function onNext(isbuyer)
                 local fusionTarget = statusFolder:FindFirstChild("Fused")
 
                 while string.lower(fusionTarget.Value) ~= string.lower(playerToFuse.Name) and task.wait() and autoFuseValues.autoFuse and attemps < MAX_ATTEMPS do
+                    pcall(uploadMinStatsRequired)
+
                     local success, internalErr = pcall(function()
                         local cframe = playerToFuse.Character.HumanoidRootPart.CFrame
 
@@ -1018,7 +1020,7 @@ local function onNext(isbuyer)
         end
 
         Players.PlayerAdded:Connect(function(player)
-            if #players:GetPlayers() > 2 then
+            if player ~= LocalPlayer then
                 LocalPlayer:Kick("Server public detected")
             end
         end)
