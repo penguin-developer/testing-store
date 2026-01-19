@@ -1018,7 +1018,7 @@ local function onNext(isbuyer)
         end
 
         Players.PlayerAdded:Connect(function(player)
-            if player ~= LocalPlayer then
+            if #players:GetPlayers() > 2 then
                 LocalPlayer:Kick("Server public detected")
             end
         end)
