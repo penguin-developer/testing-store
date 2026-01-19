@@ -5,7 +5,7 @@ local players = game:GetService("Players")
 local plr = players.LocalPlayer
 
 local fusionTarget = plr:FindFirstChild("Status"):FindFirstChild("FusionTarget")
-local playerFuse = 'Angular_Dev'
+local playerFuse = 'DexPenguin666'
 
 local function getPlayerByName(name)
     for _, p in ipairs(players:GetPlayers()) do
