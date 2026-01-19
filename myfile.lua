@@ -563,7 +563,7 @@ local function onNext(isbuyer)
             percent = 15
         end
 
-        while checkBoss(bossLiving) and isPlayerAlive and autoFarmValues.autoFarm do
+        while checkBoss(bossLiving) and isPlayerAlive and autoFarmValues.autoFarm and not isModeAutoFuse do
             local _, e = pcall(function()
                 local HumanoidRootPart = bossLiving:FindFirstChild("HumanoidRootPart")
                 local pos = HumanoidRootPart.CFrame
@@ -584,7 +584,7 @@ local function onNext(isbuyer)
 
                 tpPlayer(tpPosition)
 
-                if isModeAutoTransform or isModeAutoFuse then
+                if isModeAutoTransform then
                     tpDistance = 70
                 else
                     task.spawn(autoBlock)
