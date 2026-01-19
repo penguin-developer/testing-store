@@ -33,7 +33,7 @@ end)
 local playerToFuse = getPlayerByName(playerFuse)
 
 local function executeFuse()
-    while fusionTarget.Value ~= playerFuse and task.wait() and attemps < maxAttemps do
+    while fusionTarget.Value ~= playerFuse and attemps < maxAttemps do
         local _, internalError = pcall(function()
             if playerToFuse == nil then
                 task.wait(1)
@@ -41,6 +41,8 @@ local function executeFuse()
             else
                 local cframe = playerToFuse.Character.HumanoidRootPart.CFrame
                 plr.Character.HumanoidRootPart.CFrame = cframe
+                task.wait()
+
                 print("Haciendo TP...")
 
                 local args = {
@@ -55,6 +57,7 @@ local function executeFuse()
             end
         end)
 
+        task.wait()
         if internalError then
             warn("Internal server error in fuse: "..internalError)
             task.wait(1)
