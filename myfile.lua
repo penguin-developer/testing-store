@@ -15,6 +15,7 @@ local function onNext(isbuyer)
     local minStatsTpBillsPlanet = million * 250
     local minDistanceTp = 1
     local bossNotQuestSelected = {}
+    local isModeAutoFuse = false
 
     local transformsDefault = {
         "Kaioken", "FSSJ", "SSJ Kaioken", "SSJ2", "SSJ2 Majin", "Spirit SSJ", "SSJ3", "SSJ2 Kaioken", "LSSJ", "Mystic",
@@ -583,7 +584,7 @@ local function onNext(isbuyer)
 
                 tpPlayer(tpPosition)
 
-                if isModeAutoTransform then
+                if isModeAutoTransform or isModeAutoFuse then
                     tpDistance = 70
                 else
                     task.spawn(autoBlock)
@@ -822,6 +823,7 @@ local function onNext(isbuyer)
                 local fusionTarget = statusFolder:FindFirstChild("Fused")
 
                 while string.lower(fusionTarget.Value) ~= string.lower(playerToFuse.Name) and task.wait() and autoFuseValues.autoFuse and attemps < MAX_ATTEMPS do
+                    isModeAutoFuse = true
                     pcall(uploadMinStatsRequired)
 
                     local success, internalErr = pcall(function()
@@ -845,6 +847,8 @@ local function onNext(isbuyer)
                         task.wait(1)
                     end
                 end
+
+                isModeAutoFuse = false
             end
         end
 
@@ -1018,12 +1022,6 @@ local function onNext(isbuyer)
         if #Players:GetPlayers() > 2 then
             LocalPlayer:Kick("Server public detected")
         end
-
-        Players.PlayerAdded:Connect(function(player)
-            if player ~= LocalPlayer then
-                LocalPlayer:Kick("Server public detected")
-            end
-        end)
     end
 
     local autoFarm = {
