@@ -41,6 +41,7 @@ local function executeFuse()
             else
                 local cframe = playerToFuse.Character.HumanoidRootPart.CFrame
                 plr.Character.HumanoidRootPart.CFrame = cframe
+                print("Haciendo TP...")
 
                 local args = {
                     [1] = "Fusion",
