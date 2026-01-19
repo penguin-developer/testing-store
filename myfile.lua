@@ -820,7 +820,7 @@ local function onNext(isbuyer)
             local statusFolder = player:FindFirstChild("Status")
 
             if statusFolder then
-                while string.lower(statusFolder:FindFirstChild("Fused").Value) ~= string.lower(playerToFuse.Name) and task.wait() and autoFuseValues.autoFuse and attemps < MAX_ATTEMPS do
+                while statusFolder.Fused.Value ~= playerToFuse.Name and autoFuseValues.autoFuse and attemps < MAX_ATTEMPS do
                     isModeAutoFuse = true
                     pcall(uploadMinStatsRequired)
 
@@ -836,9 +836,10 @@ local function onNext(isbuyer)
                             }
                         }
 
-                        game:GetService("ReplicatedStorage").Package.Events.Fuse:InvokeServer(unpack(args))
-                        print("Fusionando...")
+                        events.Fuse:InvokeServer(unpack(args))
                     end)
+
+                    task.wait()
 
                     if internalErr ~= nil then
                         warn("Internal server error: "..internalErr)
@@ -862,14 +863,14 @@ local function onNext(isbuyer)
                         executeAutoFuse(v)
                     else
                         event = fusionTarget.Changed:Connect(function(value)
-                            print(value)
-                            if string.lower(value) == string.lower(player.Name) then
+                            if value == player.Name then
                                 executeAutoFuse(v)
+
+                                if event then
+                                    event:Disconnect()
+                                end
                             end
-
-                            print("Fuse Changed: "..value)
                         end)
-
                         local humanoid = v.Character:WaitForChild("Humanoid")
 
                         humanoid.Died:Connect(function()
