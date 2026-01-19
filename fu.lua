@@ -40,6 +40,7 @@ local function executeFuse()
                 attemps = attemps + 1
             else
                 local cframe = playerToFuse.Character.HumanoidRootPart.CFrame
+                players.LocalPlayer.Character.HumanoidRootPart.CFrame = cframe
 
                 local args = {
                     [1] = "Fusion",
