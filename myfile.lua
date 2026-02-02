@@ -403,7 +403,7 @@ local function onNext(isbuyer)
                 return true
             end
 
-            if stats >= million * 20000000 and autoFarmValues.tpTournamentPower then
+            if stats >= million * 200 and autoFarmValues.tpTournamentPower then
                 if gameId ~= powerId then
                     tp:InvokeServer("T.O.P")
                 end
