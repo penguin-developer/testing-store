@@ -797,14 +797,15 @@ local function onNext(isbuyer)
                 end
 
                 if speed.Value <= value then
-                    task.spawn(executeCh)
-                    local of2 = events:FindFirstChild("of2")
+                    task.spawn(executePunch)
+                    -- task.spawn(executeCh)
+                    -- local of2 = events:FindFirstChild("of2")
 
-                    if of2 then
-                        of2:FireServer()
-                    else
-                        warn("of2 not found")
-                    end
+                    -- if of2 then
+                    --     of2:FireServer()
+                    -- else
+                    --     warn("of2 not found")
+                    -- end
                 end
             end)
             task.wait()
