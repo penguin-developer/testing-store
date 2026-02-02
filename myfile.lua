@@ -773,6 +773,7 @@ local function onNext(isbuyer)
         while not checkStatsFarm() and isPlayerAlive do
             local _, e = pcall(function()
                 local value = autoFarmValues.statsRequiredStartFarm
+
                 if not isValidKi(20, 20) then
                     events:WaitForChild("of"):FireServer()
                     while not isValidKi(99, 70) and isPlayerAlive do
@@ -782,17 +783,28 @@ local function onNext(isbuyer)
                     end
                     cancelAutoCharge()
                 end
+
                 if strength.Value <= value then
                     task.spawn(executePunch)
                 end
+
                 if defense.Value <= value then
                     task.spawn(executeDef)
                 end
+
                 if energy.Value <= value then
                     task.spawn(executeKb)
                 end
+
                 if speed.Value <= value then
                     task.spawn(executeCh)
+                    local of2 = events:FindFirstChild("of2")
+
+                    if of2 then
+                        of2:FireServer()
+                    else
+                        warn("of2 not found")
+                    end
                 end
             end)
             task.wait()
@@ -987,7 +999,8 @@ local function onNext(isbuyer)
 
     local function playGame()
         local character = player.Character or player.CharacterAdded:Wait()
-        character.Humanoid.Health = 0
+        local humanoid = character:WaitForChild('Humanoid', 5)
+        humanoid.Health = 0
 
         events.Start:InvokeServer()
         updateLog("Loading script...")
@@ -995,7 +1008,7 @@ local function onNext(isbuyer)
 
         playerEvent = onStartPlayer()
         local maxSeconds = 10
-        local timer = tick() -- 11:20
+        local timer = tick()
 
         defense.Changed:Connect(function()
             executeReb()
