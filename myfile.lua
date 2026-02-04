@@ -564,12 +564,12 @@ local function onNext(isbuyer)
         end
 
         while checkBoss(bossLiving) and isPlayerAlive and autoFarmValues.autoFarm and not isModeAutoFuse do
-            local _, e = pcall(function()
-                local HumanoidRootPart = bossLiving:FindFirstChild("HumanoidRootPart")
-                if not HumanoidRootPart then
-                    break
-                end
+            local HumanoidRootPart = bossLiving:FindFirstChild("HumanoidRootPart")
+            if not HumanoidRootPart then
+                break
+            end
 
+            local _, e = pcall(function()
                 local pos = HumanoidRootPart.CFrame
                 local tpPosition = pos * CFrame.new(0, 0, tpDistance)
                 -- local humanoid = player.Character:WaitForChild("Humanoid")
@@ -599,7 +599,7 @@ local function onNext(isbuyer)
             end)
 
             if e then
-                if attemps > 20 then
+                if attemps >= 20 then
                     break
                 end
 
