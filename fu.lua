@@ -23,7 +23,7 @@ local playerToFuse = getPlayerByName(playerFuse)
 local million = 1000000
 
 local function executeFuse()
-    local datas = replicatedStorage:WaitForChild("Datas")[player.userId]
+    local datas = replicatedStorage:WaitForChild("Datas")[playerToFuse.userId]
     local strength = datas.Strength
     local energy = datas.Energy
     local defense = datas.Defense
