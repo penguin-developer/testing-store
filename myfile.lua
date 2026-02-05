@@ -257,7 +257,13 @@ local function onNext(isbuyer)
 
     local function executeReb()
         if autoFarmValues.autoRebirth then
-            return events:WaitForChild("reb"):InvokeServer()
+            local ok = events:WaitForChild("reb"):InvokeServer()
+
+            pcall(function ()
+                if ok and autoFuseValues.autoFuse then
+                    player.Character.Humanoid.Health = 0
+                end
+            end)
         end
     end
 
