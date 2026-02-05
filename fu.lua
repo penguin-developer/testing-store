@@ -1,3 +1,5 @@
+local replicatedStorage = game:GetService("ReplicatedStorage")
+
 local maxAttemps = 30
 local attemps = 0
 
@@ -18,15 +20,22 @@ local function getPlayerByName(name)
 end
 
 local playerToFuse = getPlayerByName(playerFuse)
+local million = 1000000
 
 local function executeFuse()
+    local datas = replicatedStorage:WaitForChild("Datas")[player.userId]
+    local strength = datas.Strength
+    local energy = datas.Energy
+    local defense = datas.Defense
+    local speed = datas.Speed
+
     while fusionTarget.Value ~= playerFuse and attemps < maxAttemps do
         local _, internalError = pcall(function()
             if playerToFuse == nil then
                 task.wait(1)
                 attemps = attemps + 1
                 playerToFuse = getPlayerByName(playerFuse)
-            else
+            elseif strength.Value > million and energy.Value > million and defense.Value > million and speed.Value > million then
                 local cframe = playerToFuse.Character.HumanoidRootPart.CFrame
                 plr.Character.HumanoidRootPart.CFrame = cframe
 
@@ -41,6 +50,7 @@ local function executeFuse()
 
                 game:GetService("ReplicatedStorage").Package.Events.Fuse:InvokeServer(unpack(args))
                 print("Starting fuse with: "..playerToFuse.Name)
+                attemps = 0
             end
         end)
 
