@@ -680,12 +680,13 @@ local function onNext(isbuyer)
             end
 
             local formValue = folderStatus:FindFirstChild("Transformation")
+            local selectedForm = folderStatus:FindFirstChild("SelectedTransformation")
 
             if formValue.Value == form or isModeAutoTransform then
                 return
             end
 
-            while transformsValues.autoTransform and folderStatus.Transformation.Value ~= form and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
+            while transformsValues.autoTransform and formValue.Value ~= selectedForm.Value and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
                 isModeAutoTransform = true
                 local event = events:FindFirstChild('Hehehe')
 
