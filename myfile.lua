@@ -692,20 +692,25 @@ local function onNext(isbuyer)
                 return
             end
 
-            while transformsValues.autoTransform and formValue.Value ~= selectedForm.Value and isPlayerAlive and autoFarmValues.autoFarm and isValidKi(80, 20) do
+            while transformsValues.autoTransform and formValue.Value ~= selectedForm.Value and isPlayerAlive and autoFarmValues.autoFarm do
                 isModeAutoTransform = true
-                local event = events:FindFirstChild('Hehehe')
 
-                if event then
-                    event:InvokeServer()
-                else
-                    event = events:FindFirstChild('a')
+                if isValidKi(80, 20) then
+                    local event = events:FindFirstChild('Hehehe')
 
                     if event then
-                        event:FindFirstChild('Cece'):InvokeServer()
+                        event:InvokeServer()
                     else
-                        game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
+                        event = events:FindFirstChild('a')
+
+                        if event then
+                            event:FindFirstChild('Cece'):InvokeServer()
+                        else
+                            game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
+                        end
                     end
+                else
+                    task.spawn(autoCharge)
                 end
 
                 task.wait()
