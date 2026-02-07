@@ -695,7 +695,7 @@ local function onNext(isbuyer)
             while transformsValues.autoTransform and formValue.Value ~= selectedForm.Value and isPlayerAlive and autoFarmValues.autoFarm do
                 isModeAutoTransform = true
 
-                if isValidKi(80, 20) then
+                if isValidKi(80, 5) then
                     local event = events:FindFirstChild('Hehehe')
 
                     if event then
@@ -710,7 +710,8 @@ local function onNext(isbuyer)
                         end
                     end
                 else
-                    task.spawn(autoCharge)
+                    print("Auto charge mode...")
+                    autoCharge()
                 end
 
                 task.wait()
