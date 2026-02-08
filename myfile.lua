@@ -1370,7 +1370,7 @@ local function onNext(isbuyer)
             end
 
             for _, code in pairs(codes:GetChildren()) do
-                if not code:IsA("IntValue") then
+                if code:IsA("IntValue") then
                     local success, fallo = pcall(function()
                         local args = {[1] = code.Name}
                         events.SendCode:FireServer(unpack(args))
