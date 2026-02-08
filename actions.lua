@@ -762,6 +762,7 @@ local function onNext(isbuyer)
                 task.wait()
             end
 
+            pcall(redeemCodes)
             task.wait()
             isModeAutoTransform = false
         end)
@@ -1030,8 +1031,6 @@ local function onNext(isbuyer)
                             print("No viene nadie con quien pelear")
                         end
                     end
-
-                    pcall(redeemCodes)
                 end)
             end
         end
