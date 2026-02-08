@@ -17,14 +17,53 @@ local function onNext(isbuyer)
     local bossNotQuestSelected = {}
     local isModeAutoFuse = false
 
-    local transformsDefault = {
-        "Kaioken", "FSSJ", "SSJ Kaioken", "SSJ2", "SSJ2 Majin", "Spirit SSJ", "SSJ3", "SSJ2 Kaioken", "LSSJ", "Mystic",
-        "SSJ4", "SSJG", "LSSJ Kaioken", "Mystic Kaioken", "SSJ Rage", "Corrupt SSJ", "SSJ Blue", "SSJ Rose", "SSJ5", "LSSJ3", "SSJG4", "SSJB kaioken",
-        "True Rose", "SSJ Berserker", "LSSJG", "Kefla SSJ2", "Dark Rose", "Blue Evolution", "Evil SSJ", "Ultra Instinct Omen", "Godly SSJ2", "Mastered Ultra Instinct",
-        "Jiren Ultra Instinct", "God of Creation", "God of Destruction", "Super Broly", "SSJB3", "SSJR3", "True God of Destruction", "True God of Creation", "LBSSJ4",
-        "SSJB4", "Ultra Ego", "SSJBUI", "Beast", "Blanco", 'True Jui', 'CSSJB3', 'Primal Radiance', 'Primal Ruin', 'Error core: NULLSTATE', 'Primal Ego SSJ4','Northern Star','Christmas Nightmare',
-        'Ego Instinct', 'Resolution', 'Angelic Saiyan'
-    }
+    local transformsDefault = {}
+    -- local transformsDefault = {
+    --     "Kaioken", "FSSJ", "SSJ Kaioken", "SSJ2", "SSJ2 Majin", "Spirit SSJ", "SSJ3", "SSJ2 Kaioken", "LSSJ", "Mystic",
+    --     "SSJ4", "SSJG", "LSSJ Kaioken", "Mystic Kaioken", "SSJ Rage", "Corrupt SSJ", "SSJ Blue", "SSJ Rose", "SSJ5", "LSSJ3", "SSJG4", "SSJB kaioken",
+    --     "True Rose", "SSJ Berserker", "LSSJG", "Kefla SSJ2", "Dark Rose", "Blue Evolution", "Evil SSJ", "Ultra Instinct Omen", "Godly SSJ2", "Mastered Ultra Instinct",
+    --     "Jiren Ultra Instinct", "God of Creation", "God of Destruction", "Super Broly", "SSJB3", "SSJR3", "True God of Destruction", "True God of Creation", "LBSSJ4",
+    --     "SSJB4", "Ultra Ego", "SSJBUI", "Beast", "Blanco", 'True Jui', 'CSSJB3', 'Primal Radiance', 'Primal Ruin', 'Error core: NULLSTATE', 'Primal Ego SSJ4','Northern Star','Christmas Nightmare',
+    --     'Ego Instinct', 'Resolution', 'Angelic Saiyan'
+    -- }
+
+    local rs = game:GetService("ReplicatedStorage")
+    local package = rs:WaitForChild("Package", 5)
+    local skills = package:WaitForChild("Skills", 5)
+    local formsRequeriments = {}
+
+    for _, v in pairs(skills:GetChildren()) do
+        local s, err = pcall(function()
+            local requerimentsFolder = v:FindFirstChild("Requirements")
+
+            if v:IsA("Folder") and v:FindFirstChild("Time") and requerimentsFolder then
+                local statsReq = requerimentsFolder:FindFirstChild("Strength").Value
+                local percent = 80
+
+                if statsReq >= 50000000 then
+                    percent = 40
+                elseif statsReq >= 20000000 then
+                    percent = 60
+                end
+
+                if v:FindFirstChild("Gamepass") then
+                    statsReq = statsReq + ((statsReq * percent) / 100)
+                end
+
+                formsRequeriments[v.Name] = statsReq
+                table.insert(transformsDefault, v.Name)
+            end
+        end)
+
+        if err ~= nil then
+            warn(err)
+        end
+    end
+
+    table.sort(transformsDefault, function(a, b)
+        return formsRequeriments[a] > formsRequeriments[b]
+    end)
+
 
     local raidsValues = {
         BrolyRaid = {
