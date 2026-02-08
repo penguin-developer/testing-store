@@ -698,8 +698,7 @@ local function onNext(isbuyer)
             return nil
         end
 
-        for i = #transformsValues.transformsActives, 1, -1 do
-            local form = transformsValues.transformsActives[i]
+        for i, form in pairs(transformsValues.transformsActives) do
             if events.equipskill:InvokeServer(form) then
                 return form
             end
