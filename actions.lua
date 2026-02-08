@@ -1365,7 +1365,7 @@ local function onNext(isbuyer)
                 end,
             }
 
-            AutoFarm:Option(raidValue)
+            -- AutoFarm:Option(raidValue)
         end
     end
 
