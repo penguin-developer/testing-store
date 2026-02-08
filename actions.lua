@@ -762,7 +762,6 @@ local function onNext(isbuyer)
                 task.wait()
             end
 
-            pcall(redeemCodes)
             task.wait()
             isModeAutoTransform = false
         end)
@@ -984,6 +983,7 @@ local function onNext(isbuyer)
                     pcall(uploadMinStatsRequired)
 
                     task.spawn(executeForm)
+                    pcall(redeemCodes)
 
                     local quest
 
