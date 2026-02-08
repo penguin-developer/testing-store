@@ -1,4 +1,4 @@
-
+task.wait(2)
 local function onNext(isbuyer)
     local libraryUrl = "https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/library.lua"
     local Window = loadstring(game:HttpGet(libraryUrl))()
