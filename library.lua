@@ -453,6 +453,21 @@ local logic = {
 		initializeUI()
 	end,
 
+	button = function(data, button)
+		local btn = button:WaitForChild('btn')
+		local title = button:WaitForChild('title')
+
+		title.Text = data.title
+
+		btn.MouseButton1Click:Connect(function()
+			if data.onClick then
+				task.spawn(function()
+					data.onClick()
+				end)
+			end
+		end)
+	end,
+
 	text = function(data, parent)
 		local content = parent.content
 
@@ -756,6 +771,58 @@ function Window:Options(data)
 	orderDisabled.HorizontalAlignment = Enum.HorizontalAlignment.Left
 
 	logic.options(data, optionsTest)
+end
+
+function Window:Button(data)
+	local window = self.window
+
+	local button = Instance.new("Frame")
+	local title = Instance.new("TextLabel")
+	local btn = Instance.new("TextButton")
+
+	button.Name = "button"
+	button.Parent = window
+	button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	button.BackgroundTransparency = 0.600
+	button.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	button.BorderSizePixel = 0
+	button.Size = UDim2.new(0.980000019, 0, 0.150000006, 0)
+	components.border(button, 0.1)
+
+	title.Name = "title"
+	title.Parent = button
+	title.AnchorPoint = Vector2.new(0, 0.5)
+	title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	title.BackgroundTransparency = 1.000
+	title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	title.BorderSizePixel = 0
+	title.Position = UDim2.new(0.0500000007, 0, 0.5, 0)
+	title.Size = UDim2.new(0.550000012, 0, 0.699999988, 0)
+	title.Font = Enum.Font.Unknown
+	title.Text = "Default Text"
+	title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	title.TextScaled = true
+	title.TextSize = 14.000
+	title.TextWrapped = true
+	title.TextXAlignment = Enum.TextXAlignment.Left
+
+	btn.Name = "btn"
+	btn.Parent = button
+	btn.AnchorPoint = Vector2.new(1, 0.5)
+	btn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+	btn.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	btn.BorderSizePixel = 0
+	btn.Position = UDim2.new(0.949999988, 0, 0.5, 0)
+	btn.Size = UDim2.new(0.300000012, 0, 0.699999988, 0)
+	btn.Font = Enum.Font.SourceSansBold
+	btn.Text = "Click"
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextScaled = true
+	btn.TextSize = 14.000
+	btn.TextWrapped = true
+	components.border(btn, 0.2)
+
+	logic.button(data, button)
 end
 
 function Window:Text(data)
