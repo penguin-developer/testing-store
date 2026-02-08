@@ -981,7 +981,6 @@ local function onNext(isbuyer)
             if autoFarmValues.autoFarm then
                 pcall(function()
                     pcall(uploadMinStatsRequired)
-                    pcall(redeemCodes)
 
                     task.spawn(executeForm)
 
@@ -1031,6 +1030,8 @@ local function onNext(isbuyer)
                             print("No viene nadie con quien pelear")
                         end
                     end
+
+                    pcall(redeemCodes)
                 end)
             end
         end
