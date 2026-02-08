@@ -18,14 +18,6 @@ local function onNext(isbuyer)
     local isModeAutoFuse = false
 
     local transformsDefault = {}
-    -- local transformsDefault = {
-    --     "Kaioken", "FSSJ", "SSJ Kaioken", "SSJ2", "SSJ2 Majin", "Spirit SSJ", "SSJ3", "SSJ2 Kaioken", "LSSJ", "Mystic",
-    --     "SSJ4", "SSJG", "LSSJ Kaioken", "Mystic Kaioken", "SSJ Rage", "Corrupt SSJ", "SSJ Blue", "SSJ Rose", "SSJ5", "LSSJ3", "SSJG4", "SSJB kaioken",
-    --     "True Rose", "SSJ Berserker", "LSSJG", "Kefla SSJ2", "Dark Rose", "Blue Evolution", "Evil SSJ", "Ultra Instinct Omen", "Godly SSJ2", "Mastered Ultra Instinct",
-    --     "Jiren Ultra Instinct", "God of Creation", "God of Destruction", "Super Broly", "SSJB3", "SSJR3", "True God of Destruction", "True God of Creation", "LBSSJ4",
-    --     "SSJB4", "Ultra Ego", "SSJBUI", "Beast", "Blanco", 'True Jui', 'CSSJB3', 'Primal Radiance', 'Primal Ruin', 'Error core: NULLSTATE', 'Primal Ego SSJ4','Northern Star','Christmas Nightmare',
-    --     'Ego Instinct', 'Resolution', 'Angelic Saiyan'
-    -- }
 
     local rs = game:GetService("ReplicatedStorage")
     local package = rs:WaitForChild("Package", 5)
@@ -74,6 +66,11 @@ local function onNext(isbuyer)
         HellRaid = {
             placeID = 133153710156455,
             boss = 'Goheta'
+        },
+
+        ['Future Raid (Solo)'] = {
+            placeID = 139274481709472,
+            boss = 'Wukong Black'
         },
     }
 
