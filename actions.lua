@@ -1343,7 +1343,7 @@ local function onNext(isbuyer)
         end,
     }
 
-    AutoFarm:Option(autoFarm)
+    -- AutoFarm:Option(autoFarm)
 
     for quest, _ in pairs(raidsValues) do
         if autoFarmValues[quest] ~= nil then
