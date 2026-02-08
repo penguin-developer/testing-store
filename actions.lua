@@ -763,7 +763,9 @@ local function onNext(isbuyer)
             end
 
             task.wait()
+
             pcall(redeemCodes)
+            pcall(tpPlanets)
             isModeAutoTransform = false
         end)
         if e then
