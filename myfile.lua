@@ -3,6 +3,7 @@ local function onNext(isbuyer)
     local libraryUrl = "https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/library.lua"
     local Window = loadstring(game:HttpGet(libraryUrl))()
     local AutoFarm = Window.new("AutoFarm", "Farm")
+    local CodesWindow = Window.new("Codes", "Codes")
     local QuestsFarm = Window.new("Bosses", "Bosses")
     local Attacks = Window.new("Attacks", "Attacks")
     local Forms = Window.new("Forms", "Forms")
@@ -1354,6 +1355,41 @@ local function onNext(isbuyer)
         end
     end
 
+    local redeemCodeTextData = {
+        value = "Redeem codes :)"
+    }
+
+    local redeemCodesData = {
+        title = "Redeem all codes",
+
+        onClick = function()
+            local codes = package:FindFirstChild("Codes")
+
+            if not codes then
+                print("Not have codes available")
+                return
+            end
+
+            for _, code in pairs(codes:GetChildren()) do
+                if not code:IsA("IntValue") then
+                    local success, fallo = pcall(function()
+                        local args = {[1] = code.Name}
+                        events.SendCode:FireServer(unpack(args))
+                    end)
+
+                    if fallo then
+                        redeemCodeTextData.updateValue("Error in redeem code: "..code.Name)
+                        task.wait(2)
+                    else
+                        redeemCodeTextData.updateValue("Code success: "..code.Name)
+                    end
+                end
+
+                task.wait()
+            end
+        end
+    }
+
     AutoFarm:Option(autoMaxRebirth)
     AutoFarm:Option(autoRebirth)
     AutoFarm:Option(multiPlanets)
@@ -1373,6 +1409,9 @@ local function onNext(isbuyer)
     Attacks:Option(energyOption)
     Forms:Option(transformOption)
     Forms:Options(transformOptions)
+
+    CodesWindow:Button(redeemCodesData)
+    CodesWindow:Text(redeemCodeTextData)
 
     local function addDynamicOptions()
         local living = game.Workspace:FindFirstChild("Living")
