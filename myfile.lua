@@ -170,7 +170,7 @@ local function onNext(isbuyer)
 
     local transformsValues = getDataFile(fileNames.transforms) or {
         autoTransform = true,
-        transformsActives = {'Mystic', 'SSJG', 'Godly SSJ2', 'Ego Instinct'},
+        transformsActives = transformsDefault,
         transformsDisabled = {},
     }
 
