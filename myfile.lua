@@ -554,20 +554,21 @@ local function onNext(isbuyer)
                         }
 
                         local newEventAttack = events:FindFirstChild('Haha')
-                        local attackEvent = events:FindFirstChild('mel')
+                        local attackEvent = events:FindFirstChild('melfake2')
 
                         if newEventAttack then
                             newEventAttack:InvokeServer(unpack(args))
-                            lastAttackTime = os.clock()
+                        elseif not attackEvent then
+                            attackEvent = events:FindFirstChild("mel")
+                            attackEvent:InvokeServer(unpack(args))
                         elseif not attackEvent then
                             attackEvent = events:FindFirstChild("letsplayagame")
-
                             attackEvent:InvokeServer(unpack(args))
-                            lastAttackTime = os.clock()
                         else
                             attackEvent:InvokeServer(unpack(args))
-                            lastAttackTime = os.clock()
                         end
+
+                        lastAttackTime = os.clock()
                     end
                 end)
                 if y then
