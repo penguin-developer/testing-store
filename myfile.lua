@@ -579,7 +579,7 @@ local function onNext(isbuyer)
     end
 
     local lastAttackTime = 0
-    local ATTACK_COOLDOWN = 0.12
+    local ATTACK_COOLDOWN = 0.08
 
     local function attacksMelee(humanoid, myStats, pos)
         if isFreezeAttacksMelee or isModeAutoTransform then
