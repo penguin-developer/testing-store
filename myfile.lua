@@ -600,24 +600,26 @@ local function onNext(isbuyer)
             local plrStats = getMinStats()
 
             for i, melee in ipairs(meleeAttacks) do
-                if humanoid.Health <= 0 or not autoFarmValues.autoFarm or meleeAttacksRequeriments[melee] > plrStats or isModeAutoTransform then
+                if humanoid.Health <= 0 or not autoFarmValues.autoFarm or isModeAutoTransform then
                     break
                 end
 
-                local currentTime = os.clock()
-                local timeSinceLastAttack = currentTime - lastAttackTime
+                if meleeAttacksRequeriments[melee] <= plrStats then
+                    local currentTime = os.clock()
+                    local timeSinceLastAttack = currentTime - lastAttackTime
 
-                if timeSinceLastAttack < ATTACK_COOLDOWN then
-                    local waitTime = ATTACK_COOLDOWN - timeSinceLastAttack
-                    task.wait(waitTime)
-                end
+                    if timeSinceLastAttack < ATTACK_COOLDOWN then
+                        local waitTime = ATTACK_COOLDOWN - timeSinceLastAttack
+                        task.wait(waitTime)
+                    end
 
-                local _, y = pcall(function ()
-                    equipSkill(melee)
-                end)
+                    local _, y = pcall(function ()
+                        equipSkill(melee)
+                    end)
 
-                if y then
-                    warn('Error al ejecutar ataques de melee: '..y)
+                    if y then
+                        warn('Error al ejecutar ataques de melee: '..y)
+                    end
                 end
             end
 
