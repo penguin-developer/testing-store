@@ -28,6 +28,9 @@ local function onNext(isbuyer)
     local skills = package:WaitForChild("Skills", 5)
     local formsRequeriments = {}
 
+    local meleeAttacks = {}
+    local meleeAttacksRequeriments = {}
+
     local function isValidForm(name)
         for _, v in pairs(formsNotActive) do
             if v == name then
@@ -70,6 +73,26 @@ local function onNext(isbuyer)
         return formsRequeriments[a] > formsRequeriments[b]
     end)
 
+    for _, v in pairs(skills:GetChildren()) do
+        local cost = v:FindFirstChild("Cost")
+        local requeriments = v:FindFirstChild("Requirements")
+
+        if cost and requeriments then
+            local strengthValue = requeriments:FindFirstChild("Strength")
+            local energyValue = requeriments:FindFirstChild("Energy")
+
+            if not strengthValue or not strengthValue:IsA("IntValue") or strengthValue.Value == 0 or (energyValue and energyValue.Value > 0) then
+                continue
+            end
+
+            meleeAttacksRequeriments[v.Name] = strengthValue.Value
+            table.insert(meleeAttacks, v.Name)
+        end
+    end
+
+    table.sort(meleeAttacks, function(a, b)
+        return meleeAttacksRequeriments[a] > meleeAttacksRequeriments[b]
+    end)
 
     local raidsValues = {
         BrolyRaid = {
@@ -223,6 +246,62 @@ local function onNext(isbuyer)
         warn(e)
     end
 
+    local function executeAttack(nameAttack)
+        local backpack = player:WaitForChild('Backpack', 5)
+        if not backpack then return false end
+
+        local attack:Tool = backpack:FindFirstChild(nameAttack)
+        if not attack then return false end
+
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then return false end
+
+        humanoid:EquipTool(attack)
+        task.wait()
+
+        local succes, err = pcall(function()
+            local plrLiving = living:FindFirstChild(player.Name)
+
+            if not plrLiving then
+                error("Missing living")
+            end
+
+            local toolAttack = plrLiving:WaitForChild(nameAttack)
+            local moduleScript = require(toolAttack:WaitForChild("Module", 5))
+
+            if not moduleScript then
+                error("Error in module")
+            end
+
+            moduleScript.Activate(player)
+        end)
+
+        if succes then
+            return true
+        end
+
+        warn("Error in execute attack: "..err)
+        return false
+    end
+
+    local function equipSkill(attack)
+        local args = {
+            [1] = attack
+        }
+
+        events.equipskill:InvokeServer(unpack(args))
+
+        local ok = executeAttack(attack)
+
+        if ok then
+            print("Attack executed")
+        else
+            print("Attack is not valid")
+        end
+
+        task.wait(1)
+    end
+
     local function getMinStats()
         local min = strength.Value
         if energy.Value <= min then
@@ -367,16 +446,6 @@ local function onNext(isbuyer)
         events:WaitForChild("block"):InvokeServer(unpack(args))
     end
 
-    local function executeAutoChargeBySeconds(seconds, interval)
-        interval = interval or 0
-        local timer = tick()
-        while (tick() - timer) < seconds do
-            autoCharge()
-            task.wait(interval)
-        end
-        cancelAutoCharge()
-    end
-
     local function isValidKi(minValue, minPercent)
         local s, r = pcall(function()
             local character = player.Character or player.CharacterAdded:Wait()
@@ -510,7 +579,7 @@ local function onNext(isbuyer)
     end
 
     local lastAttackTime = 0
-    local ATTACK_COOLDOWN = 0.15
+    local ATTACK_COOLDOWN = 0.12
 
     local function attacksMelee(humanoid, myStats, pos)
         if isFreezeAttacksMelee or isModeAutoTransform then
@@ -527,10 +596,11 @@ local function onNext(isbuyer)
         end
 
         task.spawn(function()
-            attacksEnergy(pos, humanoid)
+            -- attacksEnergy(pos, humanoid)
+            local plrStats = getMinStats()
 
-            for i, melee in ipairs(attacksValues.meleeAttacks) do
-                if humanoid.Health <= 0 or not autoFarmValues.autoFarm then
+            for i, melee in ipairs(meleeAttacks) do
+                if humanoid.Health <= 0 or not autoFarmValues.autoFarm or meleeAttacksRequeriments[melee] > plrStats or isModeAutoTransform then
                     break
                 end
 
@@ -542,45 +612,18 @@ local function onNext(isbuyer)
                     task.wait(waitTime)
                 end
 
-                if isModeAutoTransform then
-                    break
-                end
-
-                local x, y = pcall(function()
-                    if melee.stats <= myStats then
-                        local args = {
-                            [1] = melee.name,
-                            [2] = "Blacknwhite27"
-                        }
-
-                        local newEventAttack = events:FindFirstChild('Haha')
-                        local attackEvent = events:FindFirstChild('melfake2')
-
-                        if newEventAttack then
-                            newEventAttack:InvokeServer(unpack(args))
-                        elseif not attackEvent then
-                            attackEvent = events:FindFirstChild("mel")
-                            attackEvent:InvokeServer(unpack(args))
-                        elseif not attackEvent then
-                            attackEvent = events:FindFirstChild("letsplayagame")
-                            attackEvent:InvokeServer(unpack(args))
-                        else
-                            attackEvent:InvokeServer(unpack(args))
-                        end
-
-                        lastAttackTime = os.clock()
-                    end
+                local _, y = pcall(function ()
+                    equipSkill(melee)
                 end)
+
                 if y then
                     warn('Error al ejecutar ataques de melee: '..y)
                 end
             end
 
-            task.wait(ATTACK_COOLDOWN / 2)
+            task.wait(ATTACK_COOLDOWN)
 
-            attacksEnergy(pos, humanoid)
-
-            task.wait(ATTACK_COOLDOWN / 2)
+            -- attacksEnergy(pos, humanoid)
             isFreezeAttacksMelee = false
         end)
     end
@@ -743,6 +786,8 @@ local function onNext(isbuyer)
             end
 
             while transformsValues.autoTransform and formValue.Value ~= selectedForm.Value and isPlayerAlive and autoFarmValues.autoFarm do
+                isModeAutoTransform = true
+
                 if isValidKi(80, 4) then
                     local event = events:FindFirstChild('Fa')
 
@@ -1095,7 +1140,7 @@ local function onNext(isbuyer)
         local LocalPlayer = Players.LocalPlayer
 
         if #Players:GetPlayers() > 2 then
-            LocalPlayer:Kick("Server public detected")
+            -- LocalPlayer:Kick("Server public detected")
         end
     end
 
@@ -1502,7 +1547,7 @@ end)
 
 pcall(function ()
     local playerID = game:GetService('Players').LocalPlayer.userId
-    local availablePlayers = {8014173878, 9158091036, 9890816157}
+    local availablePlayers = {9158091036}
 
     for _, v in pairs(availablePlayers) do
         if playerID == v then
