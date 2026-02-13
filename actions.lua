@@ -163,7 +163,7 @@ local function onNext(isbuyer)
         tpTournamentPower = true,
     }
 
-    if not isInfiniteRebirths then
+    if isInfiniteRebirths then
         autoFarmValues.multiPlanets = true
         autoFarmValues.tpBillsPlanet = false
         autoFarmValues.tpNamekPlanet = false
@@ -1583,8 +1583,9 @@ pcall(function ()
     end
 end)
 
-local url = 'https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/auth.lua'
-local onCheck = loadstring(game:HttpGet(url))()
+-- local url = 'https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/auth.lua'
+-- local onCheck = loadstring(game:HttpGet(url))()
 
+-- onCheck(onNext, 2, 1, 3)
 task.wait(2)
-onCheck(onNext, 5, 6)
+onNext(true)
