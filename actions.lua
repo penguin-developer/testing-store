@@ -1583,8 +1583,8 @@ pcall(function ()
     end
 end)
 
+task.wait(2)
 local url = 'https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/auth.lua'
 local onCheck = loadstring(game:HttpGet(url))()
 
-task.wait(2)
 onCheck(onNext, 5, 6)
