@@ -1,4 +1,3 @@
-
 local function onNext(isbuyer)
     local libraryUrl = "https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/library.lua"
     local Window = loadstring(game:HttpGet(libraryUrl))()
@@ -27,6 +26,7 @@ local function onNext(isbuyer)
     local package = rs:WaitForChild("Package", 5)
     local skills = package:WaitForChild("Skills", 5)
     local formsRequeriments = {}
+    local isInfiniteRebirths =  false
 
     local meleeAttacks = {}
     local meleeAttacksRequeriments = {}
@@ -81,7 +81,8 @@ local function onNext(isbuyer)
             local strengthValue = requeriments:FindFirstChild("Strength")
             local energyValue = requeriments:FindFirstChild("Energy")
 
-            if not strengthValue or not strengthValue:IsA("IntValue") or strengthValue.Value == 0 or (energyValue and energyValue.Value > 0) then
+            if not strengthValue or not strengthValue:IsA("IntValue") or strengthValue.Value == 0 or (energyValue and energyValue.Value > 0 and v.Name ~= "Energy Volley") then
+            -- if not strengthValue or not strengthValue:IsA("IntValue") or strengthValue.Value == 0 then
                 continue
             end
 
@@ -162,6 +163,13 @@ local function onNext(isbuyer)
         tpTournamentPower = true,
     }
 
+    if isInfiniteRebirths then
+        autoFarmValues.multiPlanets = true
+        autoFarmValues.tpBillsPlanet = false
+        autoFarmValues.tpNamekPlanet = false
+        autoFarmValues.tpTournamentPower = true
+    end
+
     local autoFuseValues = getDataFile(fileNames.fuse) or {
         autoFuse = false,
     }
@@ -196,6 +204,10 @@ local function onNext(isbuyer)
         transformsActives = transformsDefault,
         transformsDisabled = {},
     }
+
+    if isInfiniteRebirths then
+        transformsValues.autoTransform = false
+    end
 
     local minStatsQuests = {
         ["Klirin"] = 10000,
@@ -246,7 +258,39 @@ local function onNext(isbuyer)
         warn(e)
     end
 
-    local function executeAttack(nameAttack)
+    local redeemCodeTextData = {
+        value = "Redeem codes :)"
+    }
+
+    CodesWindow:Text(redeemCodeTextData)
+
+    local function executeAllCodes()
+        local codes = package:FindFirstChild("Codes")
+
+        if not codes then
+            return
+        end
+
+        for _, code in pairs(codes:GetChildren()) do
+            if code:IsA("IntValue") then
+                local success, fallo = pcall(function()
+                    local args = {[1] = code.Name}
+                    events.SendCode:FireServer(unpack(args))
+                end)
+
+                if fallo then
+                    redeemCodeTextData.updateValue("Error in redeem code: "..code.Name)
+                    task.wait(2)
+                else
+                    redeemCodeTextData.updateValue("Code success: "..code.Name)
+                end
+            end
+
+            task.wait()
+        end
+    end
+
+    local function executeAttack(nameAttack, position)
         local backpack = player:WaitForChild('Backpack', 5)
         if not backpack then return false end
 
@@ -273,7 +317,16 @@ local function onNext(isbuyer)
                 error("Error in module")
             end
 
-            moduleScript.Activate(player)
+            if attack.Name == "Energy Volley" then
+                local dataEnergy = {
+                    ["MouseHit"] = position,
+                    ["FaceMouse"] = true
+                }
+
+                moduleScript.Activate(player, true, dataEnergy)
+            else
+                moduleScript.Activate(player)
+            end
         end)
 
         if succes then
@@ -284,14 +337,14 @@ local function onNext(isbuyer)
         return false
     end
 
-    local function equipSkill(attack)
+    local function equipSkill(attack, position)
         local args = {
             [1] = attack
         }
 
         events.equipskill:InvokeServer(unpack(args))
 
-        local ok = executeAttack(attack)
+        local ok = executeAttack(attack, position)
 
         if ok then
             print("Attack executed")
@@ -385,7 +438,7 @@ local function onNext(isbuyer)
     end
 
     local function executeReb()
-        if autoFarmValues.autoRebirth then
+        if autoFarmValues.autoRebirth or (isInfiniteRebirths and game.PlaceId ~= earthId) then
             local ok = events:WaitForChild("reb"):InvokeServer()
 
             pcall(function ()
@@ -563,25 +616,10 @@ local function onNext(isbuyer)
         },
     }
 
-    local function attacksEnergy(position, humanoid)
-        if humanoid.Health <= 0 then
-            return
-        end
+    -- local lastAttackTime = 0
+    local ATTACK_COOLDOWN = 0.1
 
-        local s, fall = pcall(function ()
-            local args = {[1] = "Energy Volley", [2] = {["FaceMouse"] = true, ["MouseHit"] = position}, [3] = "Blacknwhite27"}
-            events:WaitForChild("voleys"):InvokeServer(unpack(args))
-        end)
-    
-        if fall then
-            warn("Error in attacks energy: "..fall)
-        end
-    end
-
-    local lastAttackTime = 0
-    local ATTACK_COOLDOWN = 0.08
-
-    local function attacksMelee(humanoid, myStats, pos)
+    local function attacksMelee(humanoid:Humanoid, myStats, pos)
         if isFreezeAttacksMelee or isModeAutoTransform then
             return
         end
@@ -600,26 +638,22 @@ local function onNext(isbuyer)
             local plrStats = getMinStats()
 
             for i, melee in ipairs(meleeAttacks) do
-                if humanoid.Health <= 0 or not autoFarmValues.autoFarm or isModeAutoTransform then
+                if humanoid.Health <= 0 or not autoFarmValues.autoFarm or isModeAutoTransform or not isPlayerAlive then
                     break
                 end
 
                 if meleeAttacksRequeriments[melee] <= plrStats then
-                    local currentTime = os.clock()
-                    local timeSinceLastAttack = currentTime - lastAttackTime
+                    -- local currentTime = os.clock()
+                    -- local timeSinceLastAttack = currentTime - lastAttackTime
 
-                    if timeSinceLastAttack < ATTACK_COOLDOWN then
-                        local waitTime = ATTACK_COOLDOWN - timeSinceLastAttack
-                        task.wait(waitTime)
-                    end
+                    -- if timeSinceLastAttack < ATTACK_COOLDOWN then
+                    --     local waitTime = ATTACK_COOLDOWN - timeSinceLastAttack
+                    --     task.wait(waitTime)
+                    -- end
 
-                    local _, y = pcall(function ()
-                        equipSkill(melee)
+                    task.spawn(function()
+                        equipSkill(melee, humanoid.RootPart.CFrame)
                     end)
-
-                    if y then
-                        warn('Error al ejecutar ataques de melee: '..y)
-                    end
                 end
             end
 
@@ -767,7 +801,7 @@ local function onNext(isbuyer)
     end
 
     local function executeForm()
-        if not transformsValues.autoTransform then
+        if not transformsValues.autoTransform or true then
             return
         end
 
@@ -1084,11 +1118,17 @@ local function onNext(isbuyer)
 
     local function onStartPlayer()
         return player.CharacterAdded:Connect(function(char)
-            warn("Revivio")
 
             while char and char:FindFirstChild("Humanoid") and char:FindFirstChild("Humanoid").Health <= 0 do
                 task.wait()
                 print("Esperando a que reviva")
+            end
+
+            if isInfiniteRebirths then
+                pcall(executeAllCodes)
+
+                task.wait(1)
+                tpPlanets()
             end
 
             alreadyStartedScript = true
@@ -1108,6 +1148,17 @@ local function onNext(isbuyer)
     end
 
     local function playGame()
+        if rebirth and rebirth.Value >= 300000 then
+            warn("Ya llego a la meta de rebirths")
+            return
+        end
+
+        warn("Subiendo rebirths...")
+
+        if game.PlaceId ~= earthId and isInfiniteRebirths then
+            tp:InvokeServer("Earth")
+        end
+
         local character = player.Character or player.CharacterAdded:Wait()
         local humanoid = character:WaitForChild('Humanoid', 5)
         humanoid.Health = 0
@@ -1415,50 +1466,23 @@ local function onNext(isbuyer)
         end
     end
 
-    local redeemCodeTextData = {
-        value = "Redeem codes :)"
-    }
-
     local redeemCodesData = {
         title = "Redeem all codes",
 
-        onClick = function()
-            local codes = package:FindFirstChild("Codes")
-
-            if not codes then
-                print("Not have codes available")
-                return
-            end
-
-            for _, code in pairs(codes:GetChildren()) do
-                if code:IsA("IntValue") then
-                    local success, fallo = pcall(function()
-                        local args = {[1] = code.Name}
-                        events.SendCode:FireServer(unpack(args))
-                    end)
-
-                    if fallo then
-                        redeemCodeTextData.updateValue("Error in redeem code: "..code.Name)
-                        task.wait(2)
-                    else
-                        redeemCodeTextData.updateValue("Code success: "..code.Name)
-                    end
-                end
-
-                task.wait()
-            end
-        end
+        onClick = executeAllCodes
     }
 
     AutoFarm:Text(questTextValue)
     AutoFarm:Option(autoMaxRebirth)
     AutoFarm:Option(autoRebirth)
-    AutoFarm:Option(multiPlanets)
     AutoFarm:Option(tpSecureModeSlow)
 
-    AutoFarm:Option(tpBillsPlanetMode)
-    AutoFarm:Option(tpNamekPlanet)
-    AutoFarm:Option(tpTournamentPower)
+    if not isInfiniteRebirths then
+        AutoFarm:Option(multiPlanets)
+        AutoFarm:Option(tpBillsPlanetMode)
+        AutoFarm:Option(tpNamekPlanet)
+        AutoFarm:Option(tpTournamentPower)
+    end
 
     AutoFarm:Input(statsTpBillsPlanet)
     AutoFarm:Input(distanceTp)
@@ -1468,13 +1492,15 @@ local function onNext(isbuyer)
 
     Attacks:Option(meleeOption)
     Attacks:Option(energyOption)
-    Forms:Option(transformOption)
+
+    if not isInfiniteRebirths then
+        Forms:Option(transformOption)
+    end
 
     Forms:Text(alertForms)
     Forms:Options(transformOptions)
 
     CodesWindow:Button(redeemCodesData)
-    CodesWindow:Text(redeemCodeTextData)
 
     local function addDynamicOptions()
         local living = game.Workspace:FindFirstChild("Living")
@@ -1538,7 +1564,7 @@ local function onNext(isbuyer)
     playGame()
 end
 
-task.wait(1)
+task.wait(2)
 
 pcall(function()
     local bb = game:service'VirtualUser'
@@ -1561,5 +1587,4 @@ end)
 
 local url = 'https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/auth.lua'
 local onCheck = loadstring(game:HttpGet(url))()
-
-onCheck(onNext, 2, 1, 3)
+onCheck(onNext, 1, 2)
