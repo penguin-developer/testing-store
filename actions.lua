@@ -1,4 +1,3 @@
-
 local function onNext(isbuyer)
     local libraryUrl = "https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/library.lua"
     local Window = loadstring(game:HttpGet(libraryUrl))()
@@ -1138,6 +1137,9 @@ local function onNext(isbuyer)
 
             if isInfiniteRebirths then
                 pcall(executeAllCodes)
+
+                task.wait(1)
+                tpPlanets()
             end
 
             alreadyStartedScript = true
@@ -1157,6 +1159,17 @@ local function onNext(isbuyer)
     end
 
     local function playGame()
+        if rebirth and rebirth.Value >= 300000 then
+            warn("Ya llego a la meta de rebirths")
+            return
+        end
+
+        warn("Subiendo rebirths...")
+
+        if game.PlaceId ~= earthId and isInfiniteRebirths then
+            tp:InvokeServer("Earth")
+        end
+
         local character = player.Character or player.CharacterAdded:Wait()
         local humanoid = character:WaitForChild('Humanoid', 5)
         humanoid.Health = 0
@@ -1562,7 +1575,7 @@ local function onNext(isbuyer)
     playGame()
 end
 
-task.wait(1)
+task.wait(3)
 
 pcall(function()
     local bb = game:service'VirtualUser'
@@ -1583,8 +1596,7 @@ pcall(function ()
     end
 end)
 
-task.wait(2)
 local url = 'https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/auth.lua'
 local onCheck = loadstring(game:HttpGet(url))()
-
 onCheck(onNext, 5, 6)
+-- onNext(true)
