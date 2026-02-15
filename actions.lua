@@ -1159,11 +1159,6 @@ local function onNext(isbuyer)
     end
 
     local function playGame()
-        if rebirth and rebirth.Value >= 300000 then
-            warn("Ya llego a la meta de rebirths")
-            return
-        end
-
         warn("Subiendo rebirths...")
 
         if game.PlaceId ~= earthId and isInfiniteRebirths then
