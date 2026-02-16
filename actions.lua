@@ -1199,7 +1199,7 @@ local function onNext(isbuyer)
         local LocalPlayer = Players.LocalPlayer
 
         if #Players:GetPlayers() > 2 then
-            -- LocalPlayer:Kick("Server public detected")
+            LocalPlayer:Kick("Server public detected")
         end
     end
 
