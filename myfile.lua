@@ -801,7 +801,7 @@ local function onNext(isbuyer)
     end
 
     local function executeForm()
-        if not transformsValues.autoTransform or true then
+        if not transformsValues.autoTransform then
             return
         end
 
@@ -823,27 +823,28 @@ local function onNext(isbuyer)
 
             while transformsValues.autoTransform and formValue.Value ~= selectedForm.Value and isPlayerAlive and autoFarmValues.autoFarm do
                 isModeAutoTransform = true
+                local btn:TextButton = game:GetService("Players").LocalPlayer.PlayerGui.Main.MainFrame.MobileButtons.Transform
+                firesignal(btn.MouseButton1Click)
 
-                if isValidKi(80, 4) then
-                    local event = events:FindFirstChild('Fa')
+                -- if isValidKi(80, 4) then
+                --     local event = events:FindFirstChild('Fa')
 
-                    if event then
-                        event:InvokeServer()
-                    else
-                        event = events:FindFirstChild('a')
+                --     if event then
+                --         event:InvokeServer()
+                --     else
+                --         event = events:FindFirstChild('a')
 
-                        if event then
-                            event:FindFirstChild('Cece'):InvokeServer()
-                        else
-                            game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
-                        end
-                    end
-                end
+                --         if event then
+                --             event:FindFirstChild('Cece'):InvokeServer()
+                --         else
+                --             game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
+                --         end
+                --     end
+                -- end
 
                 task.wait()
             end
 
-            task.wait()
             isModeAutoTransform = false
         end)
         if e then
