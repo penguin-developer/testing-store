@@ -251,6 +251,7 @@ local function onNext(isbuyer)
     local function updateLog(message)
         pcall(function()
             questTextValue.updateValue(message)
+            print(message)
         end)
     end
 
@@ -791,8 +792,34 @@ local function onNext(isbuyer)
             return nil
         end
 
+        local attempsForm = 1
+        local maxAttempsForm = 10
+        local folderStatus = player:FindFirstChild("Status")
+        local formValue = folderStatus:FindFirstChild("Transformation")
+
         for i, form in pairs(transformsValues.transformsActives) do
             if events.equipskill:InvokeServer(form) then
+                if form == formValue.Value then
+                    return form
+                end
+
+                while not isrbxactive() and attempsForm <= maxAttempsForm do
+                    attempsForm = attempsForm + 1
+                    updateLog("Wait for Roblox Window active("..tostring(attempsForm)..")")
+                    task.wait(1)
+                end
+
+                if attempsForm == maxAttempsForm then
+                    return nil
+                end
+
+                attempsForm = 0
+                while formValue.Value ~= form and attempsForm <= maxAttempsForm do
+                    keypress(0x47)
+                    attempsForm = attempsForm + 1
+                    updateLog("Execute form succesfully (anti-detect) ("..tostring(attempsForm)..")")
+                    task.wait(1)
+                end
                 return form
             end
         end
@@ -800,59 +827,73 @@ local function onNext(isbuyer)
         return nil
     end
 
-    local function executeForm()
-        if not transformsValues.autoTransform then
-            return
-        end
+    -- local function executeForm()
+    --     if not transformsValues.autoTransform then
+    --         return
+    --     end
 
-        local s, e = pcall(function()
-            local form = selectForm()
+    --     local s, e = pcall(function()
+    --         local form = selectForm()
 
-            local folderStatus = player:FindFirstChild("Status")
-            if not form or not folderStatus == form then
-                print("No viene status")
-                return
-            end
+    --         local folderStatus = player:FindFirstChild("Status")
+    --         if not form or not folderStatus then
+    --             print("No viene status")
+    --             return
+    --         end
 
-            local formValue = folderStatus:FindFirstChild("Transformation")
-            local selectedForm = folderStatus:FindFirstChild("SelectedTransformation")
+    --         local formValue = folderStatus:FindFirstChild("Transformation")
+    --         local selectedForm = folderStatus:FindFirstChild("SelectedTransformation")
 
-            if formValue.Value == form or isModeAutoTransform then
-                return
-            end
+    --         if formValue.Value == form or isModeAutoTransform then
+    --             return
+    --         end
 
-            while transformsValues.autoTransform and formValue.Value ~= selectedForm.Value and isPlayerAlive and autoFarmValues.autoFarm do
-                isModeAutoTransform = true
-                local btn:TextButton = game:GetService("Players").LocalPlayer.PlayerGui.Main.MainFrame.MobileButtons.Transform
-                firesignal(btn.MouseButton1Click)
+    --         local btn:TextButton = game:GetService("Players").LocalPlayer.PlayerGui.Main.MainFrame.MobileButtons.Transform
+    --         local attemptsForm = 1
+    --         local maxAttemptsForm = 10
 
-                -- if isValidKi(80, 4) then
-                --     local event = events:FindFirstChild('Fa')
+    --         while attemptsForm <= maxAttemptsForm and transformsValues.autoTransform and formValue.Value ~= selectedForm.Value and isPlayerAlive and autoFarmValues.autoFarm do
+    --             isModeAutoTransform = true
 
-                --     if event then
-                --         event:InvokeServer()
-                --     else
-                --         event = events:FindFirstChild('a')
+    --             if isrbxactive() then
+    --                 keypress(0x47)
+    --                 print("EJECUTANDO FORMA")
+    --                 task.wait(2)
+    --                 -- firesignal(btn.MouseButton1Click)
+    --             else
+    --                 attemptsForm = attemptsForm + 1
+    --                 print("Wait for roblox event...")
+    --                 task.wait(2)
+    --             end
 
-                --         if event then
-                --             event:FindFirstChild('Cece'):InvokeServer()
-                --         else
-                --             game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
-                --         end
-                --     end
-                -- end
 
-                task.wait()
-            end
+    --             -- if isValidKi(80, 4) then
+    --             --     local event = events:FindFirstChild('Fa')
 
-            isModeAutoTransform = false
-        end)
-        if e then
-            print("Error al form: "..e)
-            addLogError("Error al transformarme: "..e)
-            isModeAutoTransform = false
-        end
-    end
+    --             --     if event then
+    --             --         event:InvokeServer()
+    --             --     else
+    --             --         event = events:FindFirstChild('a')
+
+    --             --         if event then
+    --             --             event:FindFirstChild('Cece'):InvokeServer()
+    --             --         else
+    --             --             game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
+    --             --         end
+    --             --     end
+    --             -- end
+
+    --             task.wait()
+    --         end
+
+    --         isModeAutoTransform = false
+    --     end)
+    --     if e then
+    --         print("Error al form: "..e)
+    --         addLogError("Error al transformarme: "..e)
+    --         isModeAutoTransform = false
+    --     end
+    -- end
 
     local function selectQuest(quest)
         local name = quest.name
@@ -1064,7 +1105,8 @@ local function onNext(isbuyer)
                 pcall(function()
                     pcall(uploadMinStatsRequired)
 
-                    task.spawn(executeForm)
+                    -- task.spawn(executeForm)
+                    selectForm()
 
                     local quest
 
@@ -1527,7 +1569,7 @@ local function onNext(isbuyer)
 
         for _, boss in pairs(living:GetChildren()) do
             print(quests[boss.Name])
-            if boss:FindFirstChild("NPC") and getQuestByName(boss.Name) == nil then
+            if boss:FindFirstChild("NPC") and getQuestByName(boss.Name) == nil or boss.Name == "Goheta (Base - SSJB)" then
                 local optionBoss = {
                     value = false,
                     title = "Kill "..boss.Name,
