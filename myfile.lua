@@ -1583,4 +1583,4 @@ end)
 
 local url = 'https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/auth.lua'
 local onCheck = loadstring(game:HttpGet(url))()
-onCheck(onNext, 1, 2)
+onCheck(onNext, "7103e2e5-16ed-4e19-b86f-25c8ba4cb77a", "0a5c74b1-742e-491d-99a3-488add07a6db")
