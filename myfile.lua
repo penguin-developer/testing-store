@@ -46,7 +46,7 @@ local function onNext(isbuyer)
             local requerimentsFolder = v:FindFirstChild("Requirements")
 
             if v:IsA("Folder") and v:FindFirstChild("Time") and requerimentsFolder and isValidForm(v.Name) then
-                local statsReq = requerimentsFolder:FindFirstChild("Strength").Value
+                local statsReq = tonumber(requerimentsFolder:FindFirstChild("Strength").Value)
                 local percent = 80
 
                 if statsReq >= 50000000 then
@@ -81,12 +81,12 @@ local function onNext(isbuyer)
             local strengthValue = requeriments:FindFirstChild("Strength")
             local energyValue = requeriments:FindFirstChild("Energy")
 
-            if not strengthValue or not strengthValue:IsA("IntValue") or strengthValue.Value == 0 or (energyValue and energyValue.Value > 0 and v.Name ~= "Energy Volley") then
-            -- if not strengthValue or not strengthValue:IsA("IntValue") or strengthValue.Value == 0 then
+            if not strengthValue or not strengthValue:IsA("IntValue") or tonumber(strengthValue.Value) == 0 or (energyValue and tonumber(energyValue.Value) > 0 and v.Name ~= "Energy Volley") then
+            -- if not strengthValue or not strengthValue:IsA("IntValue") or tonumber(strengthValue.Value) == 0 then
                 continue
             end
 
-            meleeAttacksRequeriments[v.Name] = strengthValue.Value
+            meleeAttacksRequeriments[v.Name] = tonumber(strengthValue.Value)
             table.insert(meleeAttacks, v.Name)
         end
     end
@@ -255,6 +255,23 @@ local function onNext(isbuyer)
         end)
     end
 
+    local function getStrengthValue()
+        return tonumber(strength.Value)
+    end
+
+    local function getEnergyValue()
+        return tonumber(energy.Value)
+    end
+
+    local function getDefenseValue()
+        return tonumber(defense.Value)
+    end
+
+    local function getSpeedValue()
+        return tonumber(speed.Value)
+    end
+
+
     local function addLogError(e)
         warn(e)
     end
@@ -349,23 +366,21 @@ local function onNext(isbuyer)
 
         if ok then
             print("Attack executed")
-        else
-            print("Attack is not valid")
         end
 
         task.wait(1)
     end
 
     local function getMinStats()
-        local min = strength.Value
-        if energy.Value <= min then
-            min = energy.Value
+        local min = getStrengthValue()
+        if getEnergyValue() <= min then
+            min = getEnergyValue()
         end
-        if defense.Value <= min then
-            min = defense.Value
+        if getDefenseValue() <= min then
+            min = getDefenseValue()
         end
-        if speed.Value <= min then
-            min = speed.Value
+        if getSpeedValue() <= min then
+            min = getSpeedValue()
         end
         return min
     end
@@ -373,7 +388,7 @@ local function onNext(isbuyer)
     local function checkStatsFarm()
         local s, r = pcall(function()
             local statsRequired = autoFarmValues.statsRequiredStartFarm
-            return (strength.Value >= statsRequired) and (energy.Value >= statsRequired) and (defense.Value >= statsRequired) and (speed.Value >= statsRequired)
+            return (getStrengthValue() >= statsRequired) and (getEnergyValue() >= statsRequired) and (getDefenseValue() >= statsRequired) and (getSpeedValue() >= statsRequired)
         end)
         if s then
             return r
@@ -489,6 +504,7 @@ local function onNext(isbuyer)
             local args = {
                 [1] = "Blacknwhite27"
             }
+
             events:WaitForChild("cha"):InvokeServer(unpack(args))
         end
     end
@@ -500,15 +516,13 @@ local function onNext(isbuyer)
         events:WaitForChild("block"):InvokeServer(unpack(args))
     end
 
-    local function isValidKi(minValue, minPercent)
+    local function isValidKi(percent)
         local s, r = pcall(function()
             local character = player.Character or player.CharacterAdded:Wait()
-            local ki = character.Stats.Ki
+            local ki = tonumber(character.Stats.Ki.Value)
             local isValidPercent = true
-            if minPercent then
-                isValidPercent = ki.Value >= ((energy.Value / 500) * (minPercent / 100))
-            end
-            return ki.Value > minValue and isValidPercent
+
+            return ki >= percent
         end)
         if s then
             return r
@@ -532,7 +546,7 @@ local function onNext(isbuyer)
                         print("Agregando a: "..bossName)
                         local boss = questsValues.questActive[bossName]
                         if not boss then
-                            boss = {nickName = questLiving.Name, stats = questLiving.Stats.Strength.Value * 2, name = bossName}
+                            boss = {nickName = questLiving.Name, stats = tonumber(questLiving.Stats.Strength.Value) * 2, name = bossName}
                         end
                         table.insert(quests, boss)
                     else
@@ -689,17 +703,6 @@ local function onNext(isbuyer)
         local stats = getMinStats()
         local attemps = 0
 
-        local percent = 20
-        if stats > million * 200 then
-            percent = 5
-        elseif stats > million * 100 then
-            percent = 10
-        elseif stats > million * 50 then
-            percent = 10
-        elseif stats > million * 10 then
-            percent = 15
-        end
-
         while checkBoss(bossLiving) and isPlayerAlive and autoFarmValues.autoFarm and not isModeAutoFuse do
             local HumanoidRootPart = bossLiving:FindFirstChild("HumanoidRootPart")
             if not HumanoidRootPart then
@@ -711,16 +714,14 @@ local function onNext(isbuyer)
                 local tpPosition = pos * CFrame.new(0, 0, tpDistance)
                 -- local humanoid = player.Character:WaitForChild("Humanoid")
 
-                if stats > 100000 and not isValidKi(40, percent) then
-                    while not isValidKi(100, 35) and isPlayerAlive and autoFarmValues.autoFarm do
+                if stats > 100000 and not isValidKi(30) then
+                    while not isValidKi(99) and isPlayerAlive and autoFarmValues.autoFarm do
                         task.spawn(function ()
-                            autoBlock()
                             autoCharge()
                         end)
                         tpBack(HumanoidRootPart.CFrame)
                         task.wait()
                     end
-                    cancelAutoCharge()
                 end
 
                 tpPlayer(tpPosition)
@@ -728,7 +729,6 @@ local function onNext(isbuyer)
                 if isModeAutoTransform then
                     tpDistance = 70
                 else
-                    task.spawn(autoBlock)
                     tpDistance = autoFarmValues.distanceTpBoss
                     attacks(bossLiving.Humanoid, stats, pos)
                 end
@@ -769,9 +769,11 @@ local function onNext(isbuyer)
         for _, quest in pairs(quests) do
             local boss = getBossLiving(quest.nickName)
             local npc = npcs:FindFirstChild(quest.name)
+
             if not isPlayerAlive then
                 break
             end
+
             local _ = questsValues.questActive[boss.Name]
             local statsQuest = quest.stats
 
@@ -779,7 +781,7 @@ local function onNext(isbuyer)
                 statsQuest = statsQuest + (statsQuest / 10)
             end
 
-            if strength.Value >= statsQuest and npc and npc:FindFirstChild("HumanoidRootPart") and boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 and executeQuest(quest.name) then
+            if tonumber(getStrengthValue()) >= statsQuest and npc and npc:FindFirstChild("HumanoidRootPart") and boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 and executeQuest(quest.name) then
                 updateLog("Seleccionando la mision con el nombre: "..quest.name)
                 return quest
             end
@@ -795,13 +797,20 @@ local function onNext(isbuyer)
         local attempsForm = 1
         local maxAttempsForm = 10
         local folderStatus = player:FindFirstChild("Status")
+
+        if not folderStatus then
+            return
+        end
+
         local formValue = folderStatus:FindFirstChild("Transformation")
 
-        for i, form in pairs(transformsValues.transformsActives) do
+        for _, form in ipairs(transformsValues.transformsActives) do
             if events.equipskill:InvokeServer(form) then
                 if form == formValue.Value then
-                    return form
+                    return
                 end
+
+                isModeAutoTransform = true
 
                 while not isrbxactive() and attempsForm <= maxAttempsForm do
                     attempsForm = attempsForm + 1
@@ -810,7 +819,7 @@ local function onNext(isbuyer)
                 end
 
                 if attempsForm == maxAttempsForm then
-                    return nil
+                    return
                 end
 
                 attempsForm = 0
@@ -820,80 +829,14 @@ local function onNext(isbuyer)
                     updateLog("Execute form succesfully (anti-detect) ("..tostring(attempsForm)..")")
                     task.wait(1)
                 end
-                return form
+
+                isModeAutoTransform = false
+                return
             end
         end
 
         return nil
     end
-
-    -- local function executeForm()
-    --     if not transformsValues.autoTransform then
-    --         return
-    --     end
-
-    --     local s, e = pcall(function()
-    --         local form = selectForm()
-
-    --         local folderStatus = player:FindFirstChild("Status")
-    --         if not form or not folderStatus then
-    --             print("No viene status")
-    --             return
-    --         end
-
-    --         local formValue = folderStatus:FindFirstChild("Transformation")
-    --         local selectedForm = folderStatus:FindFirstChild("SelectedTransformation")
-
-    --         if formValue.Value == form or isModeAutoTransform then
-    --             return
-    --         end
-
-    --         local btn:TextButton = game:GetService("Players").LocalPlayer.PlayerGui.Main.MainFrame.MobileButtons.Transform
-    --         local attemptsForm = 1
-    --         local maxAttemptsForm = 10
-
-    --         while attemptsForm <= maxAttemptsForm and transformsValues.autoTransform and formValue.Value ~= selectedForm.Value and isPlayerAlive and autoFarmValues.autoFarm do
-    --             isModeAutoTransform = true
-
-    --             if isrbxactive() then
-    --                 keypress(0x47)
-    --                 print("EJECUTANDO FORMA")
-    --                 task.wait(2)
-    --                 -- firesignal(btn.MouseButton1Click)
-    --             else
-    --                 attemptsForm = attemptsForm + 1
-    --                 print("Wait for roblox event...")
-    --                 task.wait(2)
-    --             end
-
-
-    --             -- if isValidKi(80, 4) then
-    --             --     local event = events:FindFirstChild('Fa')
-
-    --             --     if event then
-    --             --         event:InvokeServer()
-    --             --     else
-    --             --         event = events:FindFirstChild('a')
-
-    --             --         if event then
-    --             --             event:FindFirstChild('Cece'):InvokeServer()
-    --             --         else
-    --             --             game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
-    --             --         end
-    --             --     end
-    --             -- end
-
-    --             task.wait()
-    --         end
-
-    --         isModeAutoTransform = false
-    --     end)
-    --     if e then
-    --         print("Error al form: "..e)
-    --         addLogError("Error al transformarme: "..e)
-    --         isModeAutoTransform = false
-    --     end
-    -- end
 
     local function selectQuest(quest)
         local name = quest.name
@@ -959,9 +902,9 @@ local function onNext(isbuyer)
             local _, e = pcall(function()
                 local value = autoFarmValues.statsRequiredStartFarm
 
-                if not isValidKi(20, 20) then
+                if not isValidKi(20) then
                     events:WaitForChild("of"):FireServer()
-                    while not isValidKi(99, 70) and isPlayerAlive do
+                    while not isValidKi(70) and isPlayerAlive do
                         print("Esperando ki!")
                         task.spawn(autoCharge)
                         task.wait()
@@ -969,19 +912,19 @@ local function onNext(isbuyer)
                     cancelAutoCharge()
                 end
 
-                if strength.Value <= value then
+                if getStrengthValue() <= value then
                     task.spawn(executePunch)
                 end
 
-                if defense.Value <= value then
+                if tonumber(getDefenseValue()) <= value then
                     task.spawn(executeDef)
                 end
 
-                if energy.Value <= value then
+                if tonumber(getEnergyValue()) <= value then
                     task.spawn(executeKb)
                 end
 
-                if speed.Value <= value then
+                if tonumber(getSpeedValue()) <= value then
                     task.spawn(executePunch)
                     -- task.spawn(executeCh)
                     -- local of2 = events:FindFirstChild("of2")
@@ -1004,109 +947,17 @@ local function onNext(isbuyer)
     local alreadyStartedScript = false
 
     local function onStartFarm()
-        local attemps = 0
-        local MAX_ATTEMPS = 20
-        local players = game:GetService("Players")
-
-        while #players:GetPlayers() <= 1 and task.wait(1) and attemps < MAX_ATTEMPS and autoFuseValues.autoFuse do
-            attemps = attemps + 1
-        end
-
-        local player = players.LocalPlayer
-
-        local function executeAutoFuse(playerToFuse)
-            local statusFolder = player:FindFirstChild("Status")
-
-            if statusFolder then
-                while statusFolder.Fused.Value ~= playerToFuse.Name and autoFuseValues.autoFuse and attemps < MAX_ATTEMPS do
-                    isModeAutoFuse = true
-                    pcall(uploadMinStatsRequired)
-
-                    local success, internalErr = pcall(function()
-                        local cframe = playerToFuse.Character.HumanoidRootPart.CFrame
-
-                        player.Character.HumanoidRootPart.CFrame = cframe
-
-                        local args = {
-                            [1] = "Fusion",
-                            [2] = {
-                                ["MouseHit"] = cframe
-                            }
-                        }
-
-                        events.Fuse:InvokeServer(unpack(args))
-                    end)
-
-                    task.wait()
-
-                    if internalErr ~= nil then
-                        warn("Internal server error: "..internalErr)
-                        task.wait(1)
-                    end
-                end
-
-                isModeAutoFuse = false
-            end
-        end
-
-        local function checkFusionTargetEvent(v)
-            local _, fall = pcall(function()
-                local statusFolder = v:FindFirstChild("Status")
-
-                if statusFolder then
-                    local fusionTarget = statusFolder:FindFirstChild("FusionTarget")
-                    local event
-
-                    if fusionTarget.Value == player.Name then
-                        executeAutoFuse(v)
-                    else
-                        event = fusionTarget.Changed:Connect(function(value)
-                            if value == player.Name then
-                                executeAutoFuse(v)
-
-                                if event then
-                                    event:Disconnect()
-                                end
-                            end
-                        end)
-                        local humanoid = v.Character:WaitForChild("Humanoid")
-
-                        humanoid.Died:Connect(function()
-                            if event then
-                                event:Disconnect()
-                            end
-                        end) 
-                    end
-                end
-            end)
-
-            if fall then
-                warn("Error checking fusion target: "..fall)
-            end
-        end
-
-        for _, v in pairs(players:GetPlayers()) do
-            checkFusionTargetEvent(v)
-        end
-
-        players.PlayerAdded:Connect(function(p)
-            task.wait(3)
-            checkFusionTargetEvent(p)
-        end)
-
-        player.CharacterAdded:Connect(function()
-            for _, v in pairs(players:GetPlayers()) do
-                checkFusionTargetEvent(v)
-            end
-        end)
-
         while task.wait() and isPlayerAlive do
-            if autoFarmValues.autoFarm then
-                pcall(function()
-                    pcall(uploadMinStatsRequired)
+            print("Script started")
 
-                    -- task.spawn(executeForm)
+            if autoFarmValues.autoFarm then
+                succes, err = pcall(function()
+                    pcall(uploadMinStatsRequired)
+                    print("Upload stats passed")
+
                     selectForm()
+
+                    print("Select form passed")
 
                     local quest
 
@@ -1132,10 +983,13 @@ local function onNext(isbuyer)
                         end
                     end
 
+                    print("quest selected passed")
+
                     if attempsSearchQuest >= maxAttempsSearchQuest then
                         updateLog("No se encontro una mision, reiniciando!")
                         attempsSearchQuest = 0
                     end
+
                     if not quest then
                         attempsSearchQuest = attempsSearchQuest + 1
                         updateLog("No se encontro una mision, revisando de nuevo las misiones")
@@ -1155,6 +1009,10 @@ local function onNext(isbuyer)
                         end
                     end
                 end)
+
+                if err then
+                    updateLog("Internal error: "..err)
+                end
             end
         end
     end
@@ -1230,9 +1088,9 @@ local function onNext(isbuyer)
         local Players = game:GetService("Players")
         local LocalPlayer = Players.LocalPlayer
 
-        if #Players:GetPlayers() > 2 then
-            LocalPlayer:Kick("Server public detected")
-        end
+        --if #Players:GetPlayers() > 2 then
+        --    LocalPlayer:Kick("Server public detected")
+        --end
     end
 
     local autoFarm = {
