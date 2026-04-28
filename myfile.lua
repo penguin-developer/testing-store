@@ -81,7 +81,7 @@ local function onNext(isbuyer)
             local strengthValue = requeriments:FindFirstChild("Strength")
             local energyValue = requeriments:FindFirstChild("Energy")
 
-            if not strengthValue or not strengthValue:IsA("IntValue") or tonumber(strengthValue.Value) == 0 or (energyValue and tonumber(energyValue.Value) > 0 and v.Name ~= "Energy Volley") then
+            if v.Name == "Divine Counter" or not strengthValue or not strengthValue:IsA("IntValue") or tonumber(strengthValue.Value) == 0 or (energyValue and tonumber(energyValue.Value) > 0 and v.Name ~= "Energy Volley") then
             -- if not strengthValue or not strengthValue:IsA("IntValue") or tonumber(strengthValue.Value) == 0 then
                 continue
             end
