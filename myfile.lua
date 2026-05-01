@@ -778,10 +778,10 @@ local function onNext(isbuyer)
             local statsQuest = quest.stats
 
             if statsQuest >= 1000 then
-                statsQuest = statsQuest + (statsQuest / 10)
+                statsQuest = statsQuest + (statsQuest / 15)
             end
 
-            if tonumber(getStrengthValue()) >= statsQuest and npc and npc:FindFirstChild("HumanoidRootPart") and boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 and executeQuest(quest.name) then
+            if getStrengthValue() >= statsQuest and npc and npc:FindFirstChild("HumanoidRootPart") and boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 and executeQuest(quest.name) then
                 updateLog("Seleccionando la mision con el nombre: "..quest.name)
                 return quest
             end
