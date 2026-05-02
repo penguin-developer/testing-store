@@ -824,10 +824,17 @@ local function onNext(isbuyer)
 
                 attempsForm = 0
                 while formValue.Value ~= form and attempsForm <= maxAttempsForm do
-                    keypress(0x47)
-                    attempsForm = attempsForm + 1
-                    updateLog("Execute form succesfully (anti-detect) ("..tostring(attempsForm)..")")
-                    task.wait(1)
+                    local ok, err = pcall(function ()
+                        keypress(0x47)
+                        attempsForm = attempsForm + 1
+                        updateLog("Execute form succesfully (anti-detect) ("..tostring(attempsForm)..")")
+                        task.wait(1)
+                    end)
+
+                    if err then
+                        updateLog("Error in form.")
+                        break
+                    end
                 end
 
                 isModeAutoTransform = false
