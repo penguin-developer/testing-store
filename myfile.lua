@@ -255,6 +255,22 @@ local function onNext(isbuyer)
         end)
     end
 
+    local function isMultiBoss(name:string): boolean
+        local count = 0
+
+        for _, v in pairs(living:GetChildren()) do
+            if v.Name == name then
+                count = count + 1
+            end
+
+            if count > 2 then
+                return true
+            end
+        end
+
+        return false
+    end
+
     local function getStrengthValue()
         return tonumber(strength.Value)
     end
@@ -534,14 +550,15 @@ local function onNext(isbuyer)
 
     local function checkQuests()
         for _, q in ipairs(npcs:GetChildren()) do
-            local _, e = pcall(function()
+            pcall(function()
                 local QUEST = q:FindFirstChild("Quest")
                 print("Iterando sobre: "..q.Name)
-                if QUEST and QUEST.Value then
-                    print("Si tiene su valor")
+
+                if QUEST and QUEST.Value and not isMultiBoss(QUEST.Value) then
                     local bossName = q.Name
                     local questName = QUEST.Value
                     local questLiving = living:FindFirstChild(questName) or living:FindFirstChild(q.Name)
+
                     if questLiving then
                         print("Agregando a: "..bossName)
                         local boss = questsValues.questActive[bossName]
@@ -554,9 +571,6 @@ local function onNext(isbuyer)
                     end
                 end
             end)
-            if e then
-                addLogError("Error buscando mision: "..e)
-            end
         end
         table.sort(quests, function(a, b)
             return a.stats >= b.stats
@@ -761,16 +775,12 @@ local function onNext(isbuyer)
         isFreezeAttacksMelee = false
     end
 
-    local function getBossLiving(bossName)
-        return living:FindFirstChild(bossName)
-    end
-
     local function searchQuest()
         for _, quest in pairs(quests) do
-            local boss = getBossLiving(quest.nickName)
+            local boss = living:FindFirstChild(quest.nickName)
             local npc = npcs:FindFirstChild(quest.name)
 
-            if not isPlayerAlive then
+            if not isPlayerAlive or not boss then
                 break
             end
 
@@ -955,8 +965,6 @@ local function onNext(isbuyer)
 
     local function onStartFarm()
         while task.wait() and isPlayerAlive do
-            print("Script started")
-
             if autoFarmValues.autoFarm then
                 succes, err = pcall(function()
                     pcall(uploadMinStatsRequired)
@@ -970,7 +978,7 @@ local function onNext(isbuyer)
 
                     if #bossNotQuestSelected > 0 then
                         for _, q in pairs(bossNotQuestSelected) do
-                            local boss = getBossLiving(q)
+                            local boss = living:FindFirstChild(q)
 
                             if boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 then
                                 quest = {name = q, nickName = q}
@@ -1406,21 +1414,8 @@ local function onNext(isbuyer)
     CodesWindow:Button(redeemCodesData)
 
     local function addDynamicOptions()
-        local living = game.Workspace:FindFirstChild("Living")
+        local bossMaps = game.Workspace:FindFirstChild("Others"):FindFirstChild("BossMaps")
         local quests = game.Workspace:FindFirstChild("Others"):FindFirstChild("NPCs"):GetChildren()
-
-        local function getQuestByName(name)
-            local quest = nil
-
-            for _, q in pairs(quests) do
-                if q.Name == name then
-                    quest = q.Name
-                    break
-                end
-            end
-
-            return quest
-        end
 
         local function getIndexBossInNotQuests(name)
             for i, q in pairs(bossNotQuestSelected) do
@@ -1433,8 +1428,7 @@ local function onNext(isbuyer)
         end
 
         for _, boss in pairs(living:GetChildren()) do
-            print(quests[boss.Name])
-            if boss:FindFirstChild("NPC") and getQuestByName(boss.Name) == nil or boss.Name == "Goheta (Base - SSJB)" then
+            if boss:FindFirstChild("HitBy") and not bossMaps:FindFirstChild(boss.Name) and not isMultiBoss(boss.Name) then
                 local optionBoss = {
                     value = false,
                     title = "Kill "..boss.Name,
@@ -1456,7 +1450,6 @@ local function onNext(isbuyer)
                 }
 
                 QuestsFarm:Option(optionBoss)
-                print(boss.Name.." es un boss que no tiene mision")
             end
         end
     end
