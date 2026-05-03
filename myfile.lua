@@ -3,13 +3,14 @@ local function onNext(isbuyer)
     local Window = loadstring(game:HttpGet(libraryUrl))()
     local AutoFarm = Window.new("AutoFarm", "Farm")
     local CodesWindow = Window.new("Codes", "Codes")
+    local QuestsWindow = Window.new("Quests", "Quests")
     local QuestsFarm = Window.new("Bosses", "Bosses")
     local Attacks = Window.new("Attacks", "Attacks")
     local Forms = Window.new("Forms", "Forms")
-    local AutoFuse = Window.new("Fuse", "Fuse")
 
     local questTextValue = { value = 'Quest: none' }
     local alertForms = { value = 'Warning: Do not equip unknown transformations (in. Kawaii). Risk of being banned.' }
+    local priorizedQuests = {} -- questName, bossName {quest = questName, boss = bossName}
 
     local million = 1000000
     local httpService = game:GetService('HttpService')
@@ -17,7 +18,6 @@ local function onNext(isbuyer)
     local minStatsTpBillsPlanet = million * 250
     local minDistanceTp = 1
     local bossNotQuestSelected = {}
-    local isModeAutoFuse = false
 
     local transformsDefault = {}
     local formsNotActive = {"Dima SSJ4", 'Christmas Spirit', 'Ashie', 'Zyben SSJG', 'cont', 'Kawaii', 'Kan', 'Fairys Chosen'}
@@ -116,7 +116,6 @@ local function onNext(isbuyer)
         autofarm = 'autoFarm-devstudios-v2.txt',
         transforms = 'transforms-devstudios-v5.txt',
         attacks = 'attacks-devstudios-v1.txt',
-        fuse = 'fuse-devstudios-v1.txt',
     }
 
     local function saveDataFile(name, value)
@@ -169,10 +168,6 @@ local function onNext(isbuyer)
         autoFarmValues.tpNamekPlanet = false
         autoFarmValues.tpTournamentPower = true
     end
-
-    local autoFuseValues = getDataFile(fileNames.fuse) or {
-        autoFuse = false,
-    }
 
     for name, _ in pairs(raidsValues) do
         if autoFarmValues[name] == nil then
@@ -473,12 +468,6 @@ local function onNext(isbuyer)
     local function executeReb()
         if autoFarmValues.autoRebirth or (isInfiniteRebirths and game.PlaceId ~= earthId) then
             local ok = events:WaitForChild("reb"):InvokeServer()
-
-            pcall(function ()
-                if ok and autoFuseValues.autoFuse then
-                    player.Character.Humanoid.Health = 0
-                end
-            end)
         end
     end
 
@@ -724,7 +713,7 @@ local function onNext(isbuyer)
         local stats = getMinStats()
         local attemps = 0
 
-        while checkBoss(bossLiving) and isPlayerAlive and autoFarmValues.autoFarm and not isModeAutoFuse do
+        while checkBoss(bossLiving) and isPlayerAlive and autoFarmValues.autoFarm do
             local HumanoidRootPart = bossLiving:FindFirstChild("HumanoidRootPart")
             if not HumanoidRootPart then
                 break
@@ -995,11 +984,7 @@ local function onNext(isbuyer)
             if autoFarmValues.autoFarm then
                 succes, err = pcall(function()
                     pcall(uploadMinStatsRequired)
-                    print("Upload stats passed")
-
-                    selectForm()
-
-                    print("Select form passed")
+                    pcall(selectForm)
 
                     local quest
 
@@ -1009,6 +994,15 @@ local function onNext(isbuyer)
 
                             if boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 then
                                 quest = {name = q, nickName = q}
+                                break
+                            end
+                        end
+                    elseif #priorizedQuests > 0 then
+                        for _, q in pairs(priorizedQuests) do
+                            local boss = living:FindFirstChild(q.nickName)
+
+                            if boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 then
+                                quest = q
                                 break
                             end
                         end
@@ -1025,18 +1019,16 @@ local function onNext(isbuyer)
                         end
                     end
 
-                    print("quest selected passed")
-
                     if attempsSearchQuest >= maxAttempsSearchQuest then
-                        updateLog("No se encontro una mision, reiniciando!")
+                        updateLog("Waiting fot available quest!")
                         attempsSearchQuest = 0
                     end
 
                     if not quest then
                         attempsSearchQuest = attempsSearchQuest + 1
-                        updateLog("No se encontro una mision, revisando de nuevo las misiones")
-                        task.wait(2)
-                        pcall(checkQuests)
+                        updateLog("Waiting fot available quest!")
+                        -- task.wait(2)
+                        -- pcall(checkQuests)
                     else
                         attempsSearchQuest = 0
                         local questSelected = selectQuest(quest)
@@ -1364,20 +1356,6 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
         end,
     }
 
-    local autoFuseOption = {
-        value = autoFuseValues.autoFuse,
-        title = "Detect auto fuse",
-        description = "Execute auto fuse",
-        onChange = function(value)
-            autoFuseValues.autoFuse = value
-            saveDataFile(fileNames.fuse, autoFuseValues)
-        end,
-        onChangedTrue = function(value)
-        end,
-        onChangedFalse = function(value)
-        end,
-    }
-
     local transformOptions = {
         defaultValue = transformsDefault,
         actives = transformsValues.transformsActives,
@@ -1441,8 +1419,6 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
     AutoFarm:Input(distanceTp)
     AutoFarm:Input(statsRequired)
 
-    AutoFuse:Option(autoFuseOption)
-
     Attacks:Option(meleeOption)
     Attacks:Option(energyOption)
 
@@ -1497,9 +1473,39 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
         end
     end
 
-    addDynamicOptions()
+    local function addPriorizedQuestsOptions()
+        for _, v in pairs(quests) do
+            local option = {
+                value = false,
+                title = "Prioritize "..v.name,
+                description = "Add Prioritize quests!",
 
+                onChange = function(value)
+                end,
+
+                onChangedTrue = function(value)
+                    table.insert(priorizedQuests, v)
+                end,
+
+                onChangedFalse = function(value)
+                    for i, qv in pairs(priorizedQuests) do
+                        if qv.name == v.name then
+                            table.remove(priorizedQuests, i)
+                            break
+                        end
+                    end
+                end,
+            }
+
+            --TODO: add tab
+            QuestsWindow:Option(option)
+        end
+    end
+
+    addDynamicOptions()
     pcall(checkQuests)
+    addPriorizedQuestsOptions()
+
     playGame()
 end
 
