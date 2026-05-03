@@ -2,11 +2,13 @@ local function onNext(isbuyer)
     local libraryUrl = "https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/library.lua"
     local Window = loadstring(game:HttpGet(libraryUrl))()
     local AutoFarm = Window.new("AutoFarm", "Farm")
+    local RebirthsWindow = Window.new("Rebirths", "Rebirths")
     local CodesWindow = Window.new("Codes", "Codes")
     local QuestsWindow = Window.new("Quests", "Quests")
     local QuestsFarm = Window.new("Bosses", "Bosses")
     local Attacks = Window.new("Attacks", "Attacks")
     local Forms = Window.new("Forms", "Forms")
+    local statsForReb = 2000000
 
     local questTextValue = { value = 'Quest: none' }
     local alertForms = { value = 'Warning: Do not equip unknown transformations (in. Kawaii). Risk of being banned.' }
@@ -95,6 +97,10 @@ local function onNext(isbuyer)
         return meleeAttacksRequeriments[a] > meleeAttacksRequeriments[b]
     end)
 
+    local rebirthsValues = {
+        multiplerRebirthBaseForMaxReb = 20000,
+    }
+
     local raidsValues = {
         BrolyRaid = {
             placeID = 133153710156455,
@@ -116,6 +122,7 @@ local function onNext(isbuyer)
         autofarm = 'autoFarm-devstudios-v2.txt',
         transforms = 'transforms-devstudios-v5.txt',
         attacks = 'attacks-devstudios-v1.txt',
+        rebirthFile = 'rebirth-values-dvs-v1.txt'
     }
 
     local function saveDataFile(name, value)
@@ -467,7 +474,12 @@ local function onNext(isbuyer)
 
     local function executeReb()
         if autoFarmValues.autoMaxRebirth then
-            events:WaitForChild("Multireb"):InvokeServer()
+            local s = getMinStats()
+            local rebReq = tonumber(rebirth.Value) * statsForReb
+
+            if s >= (rebReq * rebirthsValues.multiplerRebirthBaseForMaxReb) then
+                events:WaitForChild("Multireb"):InvokeServer()
+            end
         elseif autoFarmValues.autoRebirth then
             local ok = events:WaitForChild("reb"):InvokeServer()
         end
@@ -1150,7 +1162,7 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
 
     local autoMaxRebirth = {
         value = autoFarmValues.autoMaxRebirth,
-        title = "Auto MaxRebirth",
+        title = "Auto MultiReb",
         description = "Execute max rebirth",
         onChange = function(value)
             autoFarmValues.autoMaxRebirth = value
@@ -1305,6 +1317,21 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
         end,
     }
 
+    local rebirthOptionStats = {
+        title = 'Min rebirths for exec. MultiReb',
+        value = rebirthsValues.multiplerRebirthBaseForMaxReb,
+        description = 'Min rebirths for exec. MaxRebirth',
+        inputType = 'NUMBER',
+        numberValidations = {
+            minValue = 10,
+            maxValue = 1000000000000,
+        },
+        onChange = function(value)
+            rebirthsValues.multiplerRebirthBaseForMaxReb = value
+            saveDataFile(fileNames.rebirthFile, rebirthsValues)
+        end,
+    }
+
     local meleeOption = {
         value = attacksValues.melee,
         title = "Auto Attacks Melee",
@@ -1434,6 +1461,8 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
     Forms:Text(alertForms)
     Forms:Option(transformAlwaysMode)
     Forms:Options(transformOptions)
+
+    RebirthsWindow:Input(rebirthOptionStats)
 
     CodesWindow:Button(redeemCodesData)
 
