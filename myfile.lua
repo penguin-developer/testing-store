@@ -549,22 +549,23 @@ local function onNext(isbuyer)
     end
 
     local function checkQuests()
-        for _, q in ipairs(npcs:GetChildren()) do
+        for _, q in pairs(npcs:GetChildren()) do
             pcall(function()
                 local QUEST = q:FindFirstChild("Quest")
                 print("Iterando sobre: "..q.Name)
 
                 if QUEST and QUEST.Value and not isMultiBoss(QUEST.Value) then
                     local bossName = q.Name
-                    local questName = QUEST.Value
-                    local questLiving = living:FindFirstChild(questName) or living:FindFirstChild(q.Name)
+                    local questLiving = living:FindFirstChild(QUEST.Value)
 
                     if questLiving then
                         print("Agregando a: "..bossName)
                         local boss = questsValues.questActive[bossName]
+
                         if not boss then
-                            boss = {nickName = questLiving.Name, stats = tonumber(questLiving.Stats.Strength.Value) * 2, name = bossName}
+                            boss = {nickName = questLiving.Name, stats = tonumber(questLiving.Stats.Strength.Value), name = bossName}
                         end
+
                         table.insert(quests, boss)
                     else
                         print("No viene en el living")
@@ -739,6 +740,7 @@ local function onNext(isbuyer)
                 end
 
                 tpPlayer(tpPosition)
+                task.wait()
 
                 if isModeAutoTransform then
                     tpDistance = 70
@@ -756,8 +758,8 @@ local function onNext(isbuyer)
 
                 attemps = attemps + 1
                 addLogError("Error al atacar al jefe: "..e)
+                task.wait()
             end
-            task.wait()
         end
 
         for _, v in pairs(raidsValues) do
@@ -788,7 +790,7 @@ local function onNext(isbuyer)
             local statsQuest = quest.stats
 
             if statsQuest >= 1000 then
-                statsQuest = statsQuest + (statsQuest / 15)
+                statsQuest = math.floor(statsQuest + (statsQuest / 20))
             end
 
             if getStrengthValue() >= statsQuest and npc and npc:FindFirstChild("HumanoidRootPart") and boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 and executeQuest(quest.name) then
