@@ -551,28 +551,33 @@ local function onNext(isbuyer)
     local function checkQuests()
         for _, q in pairs(npcs:GetChildren()) do
             pcall(function()
-                local QUEST = q:FindFirstChild("Quest")
-                print("Iterando sobre: "..q.Name)
+                local questLiving = living:FindFirstChild(q.Name)
 
-                if QUEST and QUEST.Value and not isMultiBoss(QUEST.Value) then
-                    local bossName = q.Name
-                    local questLiving = living:FindFirstChild(QUEST.Value)
+                if not questLiving then
+                    local QUEST = q:FindFirstChild("Quest")
+                    print("Iterando sobre con nombre diferente: "..q.Name)
 
-                    if questLiving then
-                        print("Agregando a: "..bossName)
-                        local boss = questsValues.questActive[bossName]
-
-                        if not boss then
-                            boss = {nickName = questLiving.Name, stats = tonumber(questLiving.Stats.Strength.Value), name = bossName}
-                        end
-
-                        table.insert(quests, boss)
-                    else
-                        print("No viene en el living")
+                    if not QUEST or not QUEST.Value or isMultiBoss(QUEST.Value) then
+                        error("boss is not valid")
                     end
+
+                    questLiving = living:FindFirstChild(QUEST.Value)
+                end
+
+                local bossName = q.Name
+
+                if questLiving then
+                    local boss = questsValues.questActive[bossName]
+
+                    if not boss then
+                        boss = {nickName = questLiving.Name, stats = tonumber(questLiving.Stats.Strength.Value), name = bossName}
+                    end
+
+                    table.insert(quests, boss)
                 end
             end)
         end
+
         table.sort(quests, function(a, b)
             return a.stats >= b.stats
         end)
@@ -782,7 +787,7 @@ local function onNext(isbuyer)
             local boss = living:FindFirstChild(quest.nickName)
             local npc = npcs:FindFirstChild(quest.name)
 
-            if not isPlayerAlive or not boss then
+            if not isPlayerAlive then
                 break
             end
 
@@ -1103,6 +1108,7 @@ local function onNext(isbuyer)
         end
 
         local Players = game:GetService("Players")
+local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSchedulerService")
         local LocalPlayer = Players.LocalPlayer
 
         --if #Players:GetPlayers() > 2 then
