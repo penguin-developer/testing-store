@@ -466,9 +466,14 @@ local function onNext(isbuyer)
     end
 
     local function executeReb()
-        if autoFarmValues.autoRebirth or (isInfiniteRebirths and game.PlaceId ~= earthId) then
+        if autoFarmValues.autoMaxRebirth then
+            events:WaitForChild("Multireb"):InvokeServer()
+        elseif autoFarmValues.autoRebirth then
             local ok = events:WaitForChild("reb"):InvokeServer()
         end
+
+        -- if  or (isInfiniteRebirths and game.PlaceId ~= earthId) then
+        -- end
     end
 
     local function tpPlayerSlow(rootPart, frame)
@@ -784,9 +789,9 @@ local function onNext(isbuyer)
             local _ = questsValues.questActive[boss.Name]
             local statsQuest = quest.stats
 
-            if statsQuest >= 1000 then
-                statsQuest = math.floor(statsQuest + (statsQuest / 20))
-            end
+            -- if statsQuest >= 1000 then
+            --     statsQuest = math.floor(statsQuest + (statsQuest / 20))
+            -- end
 
             if getStrengthValue() >= statsQuest and npc and npc:FindFirstChild("HumanoidRootPart") and boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 and executeQuest(quest.name) then
                 updateLog("Seleccionando la mision con el nombre: "..quest.name)
