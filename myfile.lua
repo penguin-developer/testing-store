@@ -735,7 +735,7 @@ local function onNext(isbuyer)
                 -- local humanoid = player.Character:WaitForChild("Humanoid")
 
                 if stats > 100000 and not isValidKi(30) then
-                    while not isValidKi(99) and isPlayerAlive and autoFarmValues.autoFarm do
+                    while not isValidKi(99) and isPlayerAlive and autoFarmValues.autoFarm and bossLiving.Humanoid and bossLiving.Humanoid.Health > 0 do
                         task.spawn(function ()
                             autoCharge()
                         end)
@@ -748,7 +748,7 @@ local function onNext(isbuyer)
                 task.wait()
 
                 if isModeAutoTransform then
-                    tpDistance = 70
+                    tpDistance = 50
                 else
                     tpDistance = autoFarmValues.distanceTpBoss
                     attacks(bossLiving.Humanoid, stats, pos)
