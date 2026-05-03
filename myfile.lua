@@ -114,7 +114,7 @@ local function onNext(isbuyer)
 
     local fileNames = {
         autofarm = 'autoFarm-devstudios-v2.txt',
-        transforms = 'transforms-devstudios-v4.txt',
+        transforms = 'transforms-devstudios-v5.txt',
         attacks = 'attacks-devstudios-v1.txt',
         fuse = 'fuse-devstudios-v1.txt',
     }
@@ -201,6 +201,7 @@ local function onNext(isbuyer)
 
     local transformsValues = getDataFile(fileNames.transforms) or {
         autoTransform = true,
+        alwaysEnabledForm = false,
         transformsActives = transformsDefault,
         transformsDisabled = {},
     }
@@ -829,7 +830,7 @@ local function onNext(isbuyer)
 
                 isModeAutoTransform = true
 
-                while not isrbxactive() and attempsForm <= maxAttempsForm do
+                while not transformsValues.alwaysEnabledForm and not isrbxactive() and attempsForm <= maxAttempsForm do
                     attempsForm = attempsForm + 1
                     updateLog("Wait for Roblox Window active("..tostring(attempsForm)..")")
                     task.wait(1)
@@ -840,11 +841,30 @@ local function onNext(isbuyer)
                 end
 
                 attempsForm = 0
+                local message = ""
+
                 while formValue.Value ~= form and attempsForm <= maxAttempsForm do
                     local ok, err = pcall(function ()
-                        keypress(0x47)
+                        while not isValidKi(80) do
+                            updateLog("Charging energy for transformation")
+                            isModeAutoTransform = false
+                            autoCharge()
+                            task.wait()
+                        end
+
+                        isModeAutoTransform = true
+
+                        if transformsValues.alwaysEnabledForm then
+                            message = "Execute form (not safe)"
+                            events:WaitForChild("Fa"):InvokeServer()
+                        else
+                            message = "Execute form (anti-detect) Attemps = "..tostring(attempsForm).."/"..tostring(maxAttempsForm)
+                            keypress(0x47)
+                        end
+
                         attempsForm = attempsForm + 1
-                        updateLog("Execute form succesfully (anti-detect) ("..tostring(attempsForm)..")")
+                        updateLog(message)
+
                         task.wait(1)
                     end)
 
@@ -1330,6 +1350,20 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
         end,
     }
 
+    local transformAlwaysMode = {
+        value = transformsValues.alwaysEnabledForm,
+        title = "Always enable transformation (no anti-detect)",
+        description = "Disable secure mode",
+        onChange = function(value)
+            transformsValues.alwaysEnabledForm = value
+            saveDataFile(fileNames.transforms, transformsValues)
+        end,
+        onChangedTrue = function(value)
+        end,
+        onChangedFalse = function(value)
+        end,
+    }
+
     local autoFuseOption = {
         value = autoFuseValues.autoFuse,
         title = "Detect auto fuse",
@@ -1417,6 +1451,7 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
     end
 
     Forms:Text(alertForms)
+    Forms:Option(transformAlwaysMode)
     Forms:Options(transformOptions)
 
     CodesWindow:Button(redeemCodesData)
