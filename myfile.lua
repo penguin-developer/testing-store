@@ -347,7 +347,12 @@ local function onNext(isbuyer)
                 error("Missing living")
             end
 
-            local toolAttack = plrLiving:WaitForChild(nameAttack)
+            local toolAttack = plrLiving:WaitForChild(nameAttack, 2)
+
+            if toolAttack == nil or not toolAttack then
+                error("Tool not found!")
+            end
+
             local moduleScript = require(toolAttack:WaitForChild("Module", 5))
 
             if not moduleScript then
@@ -381,13 +386,7 @@ local function onNext(isbuyer)
 
         events.equipskill:InvokeServer(unpack(args))
 
-        local ok = executeAttack(attack, position)
-
-        if ok then
-            print("Attack executed")
-        end
-
-        task.wait(1)
+        local _ = executeAttack(attack, position)
     end
 
     local function getMinStats()
@@ -814,6 +813,8 @@ local function onNext(isbuyer)
     end
 
     local function selectForm()
+        print("starting select form")
+
         if not transformsValues.autoTransform then
             return nil
         end
@@ -822,36 +823,44 @@ local function onNext(isbuyer)
         local maxAttempsForm = 10
         local folderStatus = player:FindFirstChild("Status")
 
-        if not folderStatus then
+        if not folderStatus or not autoFarmValues.autoFarm then
             return
         end
 
         local formValue = folderStatus:FindFirstChild("Transformation")
+        local strength = getMinStats()
 
         for _, form in ipairs(transformsValues.transformsActives) do
-            if events.equipskill:InvokeServer(form) then
-                if form == formValue.Value then
+            local req = formsRequeriments[form]
+
+            if strength < req then
+                continue
+            end
+
+            if events.equipskill:InvokeServer(form) or not autoFarmValues.autoFarm or not isPlayerAlive then
+                if form == formValue.Value or not autoFarmValues.autoFarm or not isPlayerAlive then
                     return
                 end
 
+                print("Select form: "..form)
                 isModeAutoTransform = true
 
-                while not transformsValues.alwaysEnabledForm and not isrbxactive() and attempsForm <= maxAttempsForm do
+                while not transformsValues.alwaysEnabledForm and not isrbxactive() and attempsForm <= maxAttempsForm and autoFarmValues.autoFarm and isPlayerAlive do
                     attempsForm = attempsForm + 1
                     updateLog("Wait for Roblox Window active("..tostring(attempsForm)..")")
                     task.wait(1)
                 end
 
-                if attempsForm == maxAttempsForm then
+                if attempsForm == maxAttempsForm or not isPlayerAlive or not autoFarmValues.autoFarm then
                     return
                 end
 
                 attempsForm = 0
                 local message = ""
 
-                while formValue.Value ~= form and attempsForm <= maxAttempsForm do
+                while formValue.Value ~= form and attempsForm <= maxAttempsForm and isPlayerAlive and autoFarmValues.autoFarm do
                     local ok, err = pcall(function ()
-                        while not isValidKi(80) do
+                        while not isValidKi(80) and isPlayerAlive and autoFarmValues.autoFarm do
                             updateLog("Charging energy for transformation")
                             isModeAutoTransform = false
                             autoCharge()
@@ -871,11 +880,11 @@ local function onNext(isbuyer)
                         attempsForm = attempsForm + 1
                         updateLog(message)
 
-                        task.wait(1)
+                        task.wait()
                     end)
 
                     if err then
-                        updateLog("Error in form.")
+                        updateLog("Error in form: "..err)
                         break
                     end
                 end
@@ -976,14 +985,6 @@ local function onNext(isbuyer)
 
                 if tonumber(getSpeedValue()) <= value then
                     task.spawn(executePunch)
-                    -- task.spawn(executeCh)
-                    -- local of2 = events:FindFirstChild("of2")
-
-                    -- if of2 then
-                    --     of2:FireServer()
-                    -- else
-                    --     warn("of2 not found")
-                    -- end
                 end
             end)
             task.wait()
@@ -1552,18 +1553,7 @@ pcall(function()
     end)
 end)
 
-pcall(function ()
-    local playerID = game:GetService('Players').LocalPlayer.userId
-    local availablePlayers = {9158091036}
-
-    for _, v in pairs(availablePlayers) do
-        if playerID == v then
-            onNext(true)
-            break
-        end
-    end
-end)
-
 local url = 'https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/auth.lua'
 local onCheck = loadstring(game:HttpGet(url))()
 onCheck(onNext, "7103e2e5-16ed-4e19-b86f-25c8ba4cb77a", "0a5c74b1-742e-491d-99a3-488add07a6db", "cdb40b55-5eca-4872-98fe-523fe2f85fd1")
+
