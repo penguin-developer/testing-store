@@ -303,7 +303,7 @@ local logic = {
 			return elements
 		end
 
-		function clearElementByName(name, frame)
+		local function clearElementByName(name, frame)
 			for _, v in pairs(frame:GetChildren()) do
 				if v:IsA('TextButton') and string.lower(v.Name) == string.lower(name) then
 					v:Destroy()
@@ -360,7 +360,7 @@ local logic = {
 			return btn
 		end
 
-		function updateCallback()
+		local function updateCallback()
 			local activeElements = {}
 			for _, v in pairs(active:GetChildren()) do
 				if v:IsA('TextButton') then
@@ -371,6 +371,8 @@ local logic = {
 			activeElements = sortByOriginalOrder(activeElements, data.defaultValue)
 			data.onChange(activeElements)
 		end
+
+		local addBtnActive, addBtnDisabled
 
 		function addBtnActive(value)
 			clearElementByName(value, disabled)
@@ -403,7 +405,7 @@ local logic = {
 			updateCallback()
 		end
 
-		function initializeUI()
+		local function initializeUI()
 			for _, container in pairs({active, disabled}) do
 				for _, v in pairs(container:GetChildren()) do
 					if v:IsA('TextButton') then
