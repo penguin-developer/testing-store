@@ -340,7 +340,7 @@ local function onNext(isBuyer)
 
     local function autoRebirth()
         if not autoFarmEnvs.AutoRebirth then return false end
-        if rebValue.Value > autoFarmEnvs.LimitOfRebirths then return true end
+        if rebValue.Value >= autoFarmEnvs.LimitOfRebirths then return true end
 
         local btnReb = gameGUI.rebirthNewMenu.Content.ConfimButton
         simulateClick(btnReb)
