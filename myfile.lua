@@ -17,7 +17,6 @@ local function onNext(isbuyer)
     local million = 1000000
     local httpService = game:GetService('HttpService')
     local minStatsRequiredFarm = 20000
-    local minStatsTpBillsPlanet = million * 250
     local minDistanceTp = 1
     local bossNotQuestSelected = {}
 
@@ -32,6 +31,17 @@ local function onNext(isbuyer)
 
     local meleeAttacks = {}
     local meleeAttacksRequeriments = {}
+    local unavailableMeleeAttacks = {
+        divinecounter = true,
+        timeskipmolotov = true,
+        punisherdrive = true,
+        savagestrike = true,
+    }
+
+    local function isAvailableMeleeAttack(name)
+        local normalizedName = name:lower():gsub("[^%w]", "")
+        return not unavailableMeleeAttacks[normalizedName]
+    end
 
     local function isValidForm(name)
         for _, v in pairs(formsNotActive) do
@@ -83,7 +93,7 @@ local function onNext(isbuyer)
             local strengthValue = requeriments:FindFirstChild("Strength")
             local energyValue = requeriments:FindFirstChild("Energy")
 
-            if v.Name == "Divine Counter" or not strengthValue or not strengthValue:IsA("IntValue") or tonumber(strengthValue.Value) == 0 or (energyValue and tonumber(energyValue.Value) > 0 and v.Name ~= "Energy Volley") then
+            if not isAvailableMeleeAttack(v.Name) or not strengthValue or not strengthValue:IsA("IntValue") or tonumber(strengthValue.Value) == 0 or (energyValue and tonumber(energyValue.Value) > 0 and v.Name ~= "Energy Volley") then
             -- if not strengthValue or not strengthValue:IsA("IntValue") or tonumber(strengthValue.Value) == 0 then
                 continue
             end
@@ -122,6 +132,7 @@ local function onNext(isbuyer)
         autofarm = 'autoFarm-devstudios-v2.txt',
         transforms = 'transforms-devstudios-v5.txt',
         attacks = 'attacks-devstudios-v1.txt',
+        meleeAttacks = 'melee-attacks-devstudios-v1.txt',
         rebirthFile = 'rebirth-values-dvs-v1.txt'
     }
 
@@ -159,22 +170,10 @@ local function onNext(isbuyer)
         autoFarm = true,
         autoRebirth = false,
         autoMaxRebirth = false,
-        multiPlanets = false,
         statsRequiredStartFarm = minStatsRequiredFarm,
-        statsBillsPlanet = minStatsTpBillsPlanet,
         distanceTpBoss = minDistanceTp * 3,
         secureTpMode = false,
-        tpBillsPlanet = true,
-        tpNamekPlanet = true,
-        tpTournamentPower = true,
     }
-
-    if isInfiniteRebirths then
-        autoFarmValues.multiPlanets = true
-        autoFarmValues.tpBillsPlanet = false
-        autoFarmValues.tpNamekPlanet = false
-        autoFarmValues.tpTournamentPower = true
-    end
 
     for name, _ in pairs(raidsValues) do
         if autoFarmValues[name] == nil then
@@ -200,6 +199,48 @@ local function onNext(isbuyer)
             {name = "Vital Strike", stats = 500},
         }
     }
+
+    local meleeAttackValues = getDataFile(fileNames.meleeAttacks)
+    if type(meleeAttackValues) ~= "table" then
+        meleeAttackValues = {}
+    end
+
+    for _, name in ipairs(meleeAttacks) do
+        if type(meleeAttackValues[name]) ~= "boolean" then
+            meleeAttackValues[name] = true
+        end
+    end
+
+    local function isMeleeAttackEnabled(name)
+        return attacksValues.melee and isAvailableMeleeAttack(name) and meleeAttackValues[name] == true
+    end
+
+    local function createMeleeAttackOptions()
+        local activeAttacks = {}
+        for _, name in ipairs(meleeAttacks) do
+            if meleeAttackValues[name] then
+                table.insert(activeAttacks, name)
+            end
+        end
+
+        local initializing = true
+        Attacks:Options({
+            defaultValue = meleeAttacks,
+            actives = activeAttacks,
+            onChange = function(selectedAttacks)
+                -- Options emite cambios parciales mientras crea sus botones.
+                if initializing then return end
+
+                for _, name in ipairs(meleeAttacks) do
+                    meleeAttackValues[name] = table.find(selectedAttacks, name) ~= nil
+                end
+                saveDataFile(fileNames.meleeAttacks, meleeAttackValues)
+            end,
+            onAdd = function() end,
+            onDelete = function() end,
+        })
+        initializing = false
+    end
 
     local transformsValues = getDataFile(fileNames.transforms) or {
         autoTransform = true,
@@ -230,9 +271,6 @@ local function onNext(isbuyer)
     local events = replicatedStorage:WaitForChild("Package"):WaitForChild("Events")
     local living = game.Workspace:WaitForChild("Living")
     local npcs = game.Workspace:WaitForChild("Others"):WaitForChild("NPCs")
-    local tp = events:WaitForChild("TP")
-    local gameId = game.PlaceId
-    local earthId = 3311165597
     local strength = datas:FindFirstChild("Strength")
     local energy = datas:FindFirstChild("Energy")
     local defense = datas:FindFirstChild("Defense")
@@ -327,39 +365,54 @@ local function onNext(isbuyer)
         end
     end
 
+    local function missingAttackInformation(nameAttack)
+        print("No viene informacion para el ataque: "..nameAttack..". Ejecucion cancelada.")
+        return false
+    end
+
     local function executeAttack(nameAttack, position)
+        if not isMeleeAttackEnabled(nameAttack) then return false end
+
         local backpack = player:WaitForChild('Backpack', 5)
-        if not backpack then return false end
+        local character = player.Character
+        local attack = character and character:FindFirstChild(nameAttack)
+            or backpack and backpack:FindFirstChild(nameAttack)
+        if not attack or not attack:IsA("Tool") then
+            return missingAttackInformation(nameAttack)
+        end
 
-        local attack:Tool = backpack:FindFirstChild(nameAttack)
-        if not attack then return false end
-
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if not humanoid then return false end
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if not humanoid or not isMeleeAttackEnabled(nameAttack) then return false end
 
         humanoid:EquipTool(attack)
         task.wait()
 
-        local succes, err = pcall(function()
-            local plrLiving = living:FindFirstChild(player.Name)
+        local success, result = pcall(function()
+            if not isMeleeAttackEnabled(nameAttack) then return false end
 
+            local plrLiving = living:FindFirstChild(player.Name)
             if not plrLiving then
-                error("Missing living")
+                return missingAttackInformation(nameAttack)
             end
 
             local toolAttack = plrLiving:WaitForChild(nameAttack, 2)
-
-            if toolAttack == nil or not toolAttack then
-                error("Tool not found!")
+            if not toolAttack then
+                return missingAttackInformation(nameAttack)
             end
 
-            local moduleScript = require(toolAttack:WaitForChild("Module", 5))
-
-            if not moduleScript then
-                error("Error in module")
+            local attackModule = toolAttack:WaitForChild("Module", 5)
+            if not attackModule or not attackModule:IsA("ModuleScript") then
+                return missingAttackInformation(nameAttack)
             end
 
-            if attack.Name == "Energy Volley" then
+            local moduleScript = require(attackModule)
+            if type(moduleScript) ~= "table" or type(moduleScript.Activate) ~= "function" then
+                return missingAttackInformation(nameAttack)
+            end
+
+            if not isMeleeAttackEnabled(nameAttack) then return false end
+
+            if nameAttack == "Energy Volley" then
                 local dataEnergy = {
                     ["MouseHit"] = position,
                     ["FaceMouse"] = true
@@ -369,24 +422,28 @@ local function onNext(isbuyer)
             else
                 moduleScript.Activate(player)
             end
+
+            return true
         end)
 
-        if succes then
-            return true
+        if success then
+            return result
         end
 
-        warn("Error in execute attack: "..err)
+        warn("Error in execute attack: "..tostring(result))
         return false
     end
 
     local function equipSkill(attack, position)
+        if not isMeleeAttackEnabled(attack) then return false end
+
         local args = {
             [1] = attack
         }
 
         events.equipskill:InvokeServer(unpack(args))
 
-        local _ = executeAttack(attack, position)
+        return executeAttack(attack, position)
     end
 
     local function getMinStats()
@@ -483,8 +540,6 @@ local function onNext(isbuyer)
             local ok = events:WaitForChild("reb"):InvokeServer()
         end
 
-        -- if  or (isInfiniteRebirths and game.PlaceId ~= earthId) then
-        -- end
     end
 
     local function tpPlayerSlow(rootPart, frame)
@@ -589,66 +644,6 @@ local function onNext(isbuyer)
         end)
     end
 
-    local function tpPlanets()
-        local succes, res = pcall(function()
-            local isRaid = false
-
-            for idx, v in pairs(autoFarmValues) do
-                if v and raidsValues[idx] then
-                    tp:InvokeServer(idx)
-                    isRaid = true
-                    break
-                end
-            end
-
-            if isRaid then
-                return
-            end
-
-            if not autoFarmValues.multiPlanets then
-                return false
-            end
-
-            local stats = getMinStats()
-            local namekId = 138941735852322
-            local billsPlanetId = 5151400895
-            local powerId = 114014249462644 -- T.O.P
-
-            if stats >= autoFarmValues.statsBillsPlanet and autoFarmValues.tpBillsPlanet then
-                if gameId ~= billsPlanetId then
-                    tp:InvokeServer("Vills Planet")
-                end
-
-                return true
-            end
-
-            if stats >= million * 200 and autoFarmValues.tpTournamentPower then
-                if gameId ~= powerId then
-                    tp:InvokeServer("T.O.P")
-                end
-
-                return true
-            end
-
-            if stats >= million and autoFarmValues.tpNamekPlanet then
-                if gameId ~= namekId then
-                    tp:InvokeServer("Namek")
-                end
-
-                return true
-            end
-
-            if gameId ~= earthId then
-                tp:InvokeServer("Earth")
-                return true
-            end
-        end)
-        if succes then
-            return res
-        else
-            return false
-        end
-    end
 
     local attacks = {
         {
@@ -679,11 +674,11 @@ local function onNext(isbuyer)
             local plrStats = getMinStats()
 
             for i, melee in ipairs(meleeAttacks) do
-                if humanoid.Health <= 0 or not autoFarmValues.autoFarm or isModeAutoTransform or not isPlayerAlive then
+                if humanoid.Health <= 0 or not autoFarmValues.autoFarm or not attacksValues.melee or isModeAutoTransform or not isPlayerAlive then
                     break
                 end
 
-                if meleeAttacksRequeriments[melee] <= plrStats then
+                if isMeleeAttackEnabled(melee) and meleeAttacksRequeriments[melee] <= plrStats then
                     -- local currentTime = os.clock()
                     -- local timeSinceLastAttack = currentTime - lastAttackTime
 
@@ -773,13 +768,6 @@ local function onNext(isbuyer)
             end
         end
 
-        for _, v in pairs(raidsValues) do
-            while gameId == v.placeID and not checkBoss(bossLiving) and task.wait() do
-                tp:InvokeServer("Earth")
-                print("TP to earth finaly...")
-            end
-        end
-
         cancelAutoCharge()
 
         tpDistance = autoFarmValues.distanceTpBoss
@@ -800,9 +788,9 @@ local function onNext(isbuyer)
             local _ = questsValues.questActive[boss.Name]
             local statsQuest = quest.stats
 
-            -- if statsQuest >= 1000 then
-            --     statsQuest = math.floor(statsQuest + (statsQuest / 20))
-            -- end
+            if statsQuest >= 1000 then
+                statsQuest = math.floor(statsQuest + (statsQuest / 10))
+            end
 
             if getStrengthValue() >= statsQuest and npc and npc:FindFirstChild("HumanoidRootPart") and boss and boss:FindFirstChild("Humanoid") and boss:FindFirstChild("Humanoid").Health > 0 and executeQuest(quest.name) then
                 updateLog("Seleccionando la mision con el nombre: "..quest.name)
@@ -1079,9 +1067,6 @@ local function onNext(isbuyer)
 
             if isInfiniteRebirths then
                 pcall(executeAllCodes)
-
-                task.wait(1)
-                tpPlanets()
             end
 
             alreadyStartedScript = true
@@ -1103,10 +1088,6 @@ local function onNext(isbuyer)
     local function playGame()
         warn("Subiendo rebirths...")
 
-        if game.PlaceId ~= earthId and isInfiniteRebirths then
-            tp:InvokeServer("Earth")
-        end
-
         local character = player.Character or player.CharacterAdded:Wait()
         local humanoid = character:WaitForChild('Humanoid', 5)
         humanoid.Health = 0
@@ -1121,7 +1102,6 @@ local function onNext(isbuyer)
 
         defense.Changed:Connect(function()
             executeReb()
-            tpPlanets()
         end)
 
         while not alreadyStartedScript do
@@ -1208,70 +1188,6 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
         end,
     }
 
-    local tpBillsPlanetMode = {
-        value = autoFarmValues.tpBillsPlanet,
-        title = "TP Bills planet",
-        description = "TP to planet",
-        onChange = function(value)
-            autoFarmValues.tpBillsPlanet = value
-
-            saveDataFile(fileNames.autofarm, autoFarmValues)
-        end,
-
-        onChangedTrue = function()
-        end,
-
-        onChangedFalse = function()
-        end,
-    }
-    local tpNamekPlanet = {
-        value = autoFarmValues.tpNamekPlanet,
-        title = "TP Namek",
-        description = "TP Namek planet",
-        onChange = function(value)
-            autoFarmValues.tpNamekPlanet = value
-
-            saveDataFile(fileNames.autofarm, autoFarmValues)
-        end,
-
-        onChangedTrue = function()
-        end,
-
-        onChangedFalse = function()
-        end,
-    }
-
-    local tpTournamentPower = {
-        value = autoFarmValues.tpTournamentPower,
-        title = "TP Tournament Power",
-        description = "TP to Tournament power",
-        onChange = function(value)
-            autoFarmValues.tpTournamentPower = value
-
-            saveDataFile(fileNames.autofarm, autoFarmValues)
-        end,
-
-        onChangedTrue = function()
-        end,
-
-        onChangedFalse = function()
-        end,
-    }
-
-    local multiPlanets = {
-        value = autoFarmValues.multiPlanets,
-        title = "TP planets",
-        description = "Execute Auto TP bills or Earth",
-        onChange = function(value)
-            autoFarmValues.multiPlanets = value
-            saveDataFile(fileNames.autofarm, autoFarmValues)
-        end,
-        onChangedTrue = function()
-        end,
-        onChangedFalse = function()
-            updateLog("Auto farm stopped")
-        end,
-    }
 
     local statsRequired = {
         title = 'Enter stats start farm:',
@@ -1288,20 +1204,6 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
         end,
     }
 
-    local statsTpBillsPlanet = {
-        title = 'Enter stats tp bills planet:',
-        value = autoFarmValues.statsBillsPlanet,
-        description = 'Start bills planet',
-        inputType = 'NUMBER',
-        numberValidations = {
-            minValue = minStatsTpBillsPlanet,
-            maxValue = minStatsTpBillsPlanet * 100000,
-        },
-        onChange = function(value)
-            autoFarmValues.statsBillsPlanet = value
-            saveDataFile(fileNames.autofarm, autoFarmValues)
-        end,
-    }
 
     local distanceTp = {
         title = 'Tp distance boss',
@@ -1441,19 +1343,12 @@ local ProceduralBehaviorSchedulerService = game:GetService("ProceduralBehaviorSc
     AutoFarm:Option(autoRebirth)
     AutoFarm:Option(tpSecureModeSlow)
 
-    if not isInfiniteRebirths then
-        AutoFarm:Option(multiPlanets)
-        AutoFarm:Option(tpBillsPlanetMode)
-        AutoFarm:Option(tpNamekPlanet)
-        AutoFarm:Option(tpTournamentPower)
-    end
-
-    AutoFarm:Input(statsTpBillsPlanet)
     AutoFarm:Input(distanceTp)
     AutoFarm:Input(statsRequired)
 
     Attacks:Option(meleeOption)
     Attacks:Option(energyOption)
+    createMeleeAttackOptions()
 
     if not isInfiniteRebirths then
         Forms:Option(transformOption)
@@ -1556,4 +1451,3 @@ end)
 local url = 'https://raw.githubusercontent.com/penguin-developer/testing-store/refs/heads/main/auth.lua'
 local onCheck = loadstring(game:HttpGet(url))()
 onCheck(onNext, "7103e2e5-16ed-4e19-b86f-25c8ba4cb77a", "0a5c74b1-742e-491d-99a3-488add07a6db", "cdb40b55-5eca-4872-98fe-523fe2f85fd1")
-
