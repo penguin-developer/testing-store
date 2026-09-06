@@ -5,7 +5,7 @@ local function onNext(isBuyer)
     local autoFarmEnvs = {
         AutoFarm = false,
         AutoWeight = false,
-        AutoRebirth = true,
+        AutoRebirth = false,
 
         LimitOfRebirths = 460,
         limitRebirths = false,
@@ -30,7 +30,8 @@ local function onNext(isBuyer)
     local ultimatesGUI = playerGui:WaitForChild("ultimatesGui"):WaitForChild("ultimatesMenu"):WaitForChild("ultimatesScrollMenu")
     local machinesFolder = game.Workspace:WaitForChild("machinesFolder")
     local KingGymPos = CFrame.new(-8749.36719, 23.6517239, -5858.39697, 0.997915983, 3.3654306e-09, 0.0645264462, -5.68376546e-09, 1, 3.57448755e-08, -0.0645264462, -3.60371359e-08, 0.997915983)
-
+    local leaderboardStats = plr:WaitForChild("leaderstats")
+    local rebValue = leaderboardStats:WaitForChild("Rebirths")
 
     local function getBackpack()
         return plr:FindFirstChild("Backpack") or plr:WaitForChild("Backpack", 5)
@@ -339,9 +340,11 @@ local function onNext(isBuyer)
 
     local function autoRebirth()
         if not autoFarmEnvs.AutoRebirth then return false end
+        if rebValue.Value > autoFarmEnvs.LimitOfRebirths then return true end
 
         local btnReb = gameGUI.rebirthNewMenu.Content.ConfimButton
         simulateClick(btnReb)
+        return true
     end
 
     local function createAutoFarmSection()
